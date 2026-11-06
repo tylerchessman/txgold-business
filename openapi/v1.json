@@ -1333,7 +1333,7 @@
     "securitySchemes": {
       "TXG1": {
         "type": "apiKey",
-        "description": "Every request carries three headers: TxG-Key-Id (your key's base64 SubjectPublicKeyInfo, the keyId in your key file), TxG-Timestamp (UTC .NET ticks, within 240 seconds of server time; it is also the request's idempotency key) and TxG-Signature (base64 ECDSA P-256 SHA-256 over the canonical string, P1363 or DER):\n\n    TXG1-ECDSA-P256-SHA256\\nMETHOD\\nPATH\\nQUERY\\nTIMESTAMP\\nhex(sha256(body bytes))\n\nThe SDKs do this for you. See https://docs.txgold.money/authentication.",
+        "description": "Every request carries three headers: TxG-Key-Id (your key's base64 SubjectPublicKeyInfo, the keyId in your key file), TxG-Timestamp (UTC .NET ticks, at most 3 minutes ahead of and 7 minutes behind server time; it is also the request's idempotency key) and TxG-Signature (base64 ECDSA P-256 SHA-256 over the canonical string, P1363 or DER):\n\n    TXG1-ECDSA-P256-SHA256\\nMETHOD\\nPATH\\nQUERY\\nTIMESTAMP\\nhex(sha256(body bytes))\n\nThe SDKs do this for you. See https://docs.txgold.money/authentication.",
         "name": "TxG-Signature",
         "in": "header"
       }

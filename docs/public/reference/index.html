@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>API reference · TxGold Business API</title>
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <style>body { margin: 0; }</style>
+</head>
+<body>
+  <!-- Scalar renders the OpenAPI document that the docs build copies to /openapi/v1.json -->
+  <script id="api-reference" data-url="/openapi/v1.json"></script>
+  <script>
+    document.getElementById('api-reference').dataset.configuration = JSON.stringify({
+      theme: 'default',
+      hideClientButton: true,
+      hiddenClients: true,
+      metaData: { title: 'TxGold Business API reference' },
+      customCss: ':root { --scalar-color-accent: #1e1e35; } .dark-mode { --scalar-color-accent: #debc60; }',
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.75.0"></script>
+</body>
+</html>
