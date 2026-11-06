@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!-- In your own project: dotnet add package TxGold.Business -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\sdk\csharp\src\TxGold.Business\TxGold.Business.csproj" />
+  </ItemGroup>
+
+</Project>

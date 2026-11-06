@@ -1,0 +1,7 @@
+artifacts/
+*.key.json
+.env
+.env.*
+.DS_Store
+.vs/
+.idea/

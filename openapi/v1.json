@@ -1,0 +1,1347 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "TxGold Business API",
+    "description": "Send and request TxGold payments from your own systems. Every request is signed with your integration key (see TXG1 below and https://docs.txgold.money/authentication). Amounts are decimal strings in TxGold units; errors are application/problem+json.",
+    "contact": {
+      "name": "TxGold",
+      "url": "https://docs.txgold.money"
+    },
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://func-txgbusiness-dev-ffdea6gbbjhzczex.southcentralus-01.azurewebsites.net",
+      "description": "Sandbox"
+    }
+  ],
+  "paths": {
+    "/v1/accounts/{accountId}": {
+      "get": {
+        "tags": [
+          "Accounts"
+        ],
+        "summary": "Get an account",
+        "description": "One account the signing key may act for. The balance is filled only for the Admin, Manager and Integration roles.",
+        "operationId": "getAccount",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/account"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The account does not exist, or the key is not attached to it.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/{accountId}/transactions": {
+      "get": {
+        "tags": [
+          "Accounts"
+        ],
+        "summary": "List an account's transactions",
+        "description": "Payments in and out of the account, newest first, with each payment's fee, counterparty, USD value and links to its payment request and refund. Balances are filled only for the Admin, Manager and Integration roles.",
+        "operationId": "listAccountTransactions",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Earliest time, inclusive: ISO 8601 with Z or an offset (URL-encode a +), or a date (midnight UTC).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "Latest time, exclusive. Same format as from.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "1-200, default 50.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "nextCursor from the previous page.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of transactions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/page_accountTransaction"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The account does not exist, or the key is not attached to it.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/accounts/lookup": {
+      "get": {
+        "tags": [
+          "Accounts"
+        ],
+        "summary": "Find a business or charity by its handle",
+        "description": "Resolves a handle such as @PoolMan to an account id before paying it. Exact match only, and only active business and charity accounts: personal accounts cannot be looked up.",
+        "operationId": "lookupAccount",
+        "parameters": [
+          {
+            "name": "accountName",
+            "in": "query",
+            "description": "The handle, with or without the leading @.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/accountLookup"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No active business or charity account has that handle.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rates": {
+      "get": {
+        "tags": [
+          "Reference data"
+        ],
+        "summary": "Get the TxGold rate",
+        "description": "What one TxGold is worth in US dollars now, from the gold price TxGold records every half hour.",
+        "operationId": "getRates",
+        "responses": {
+          "200": {
+            "description": "The current rate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/rate"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "rate_unavailable: no gold price has been recorded.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payment-requests": {
+      "post": {
+        "tags": [
+          "Payment requests"
+        ],
+        "summary": "Request a payment",
+        "description": "Asks a TxGold account to pay one of yours. Resending the identical signed request (same TxG-Timestamp) returns the existing request with 200 instead of creating another.",
+        "operationId": "createPaymentRequest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/paymentRequestCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created; the payer was notified if their phone is registered.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/paymentRequest"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Already created by an identical earlier request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/paymentRequest"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "same_account, amount_below_minimum or payer_account_invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Payment requests"
+        ],
+        "summary": "List payment requests",
+        "description": "An account's requests, newest first.",
+        "operationId": "listPaymentRequests",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "pending, paid, dismissed, cancelled or expired.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "1-200, default 50.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "nextCursor from the previous page.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of requests.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/page_paymentRequest"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request: a bad accountId, status, limit or cursor.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The account does not exist, or the key is not attached to it.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payment-requests/{id}": {
+      "get": {
+        "tags": [
+          "Payment requests"
+        ],
+        "summary": "Get a payment request",
+        "operationId": "getPaymentRequest",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/paymentRequest"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such request, or the key is not attached to the account that made it.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payment-requests/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Payment requests"
+        ],
+        "summary": "Cancel a payment request",
+        "description": "Withdraws a pending request: it disappears from the payer's app, and paying it is refused.",
+        "operationId": "cancelPaymentRequest",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cancelled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/paymentRequest"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "request_not_pending: already paid, dismissed, cancelled or expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payments": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Send a payment",
+        "description": "Sends TxGold from one of your accounts, optionally paying a payment request addressed to it. Resending the identical signed request (same TxG-Timestamp) returns the original payment with 200 instead of paying twice.",
+        "operationId": "createPayment",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/paymentCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Paid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/payment"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Already paid by an identical earlier request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/payment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The key's role may not send.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "duplicate_request (a different payment used this timestamp) or request_not_pending.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "insufficient_balance, daily_send_limit_exceeded, amount_must_match_request, payment_request_not_payable and the other business rules.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payments/{id}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Get a payment",
+        "description": "A payment either side of which the signing key may act for.",
+        "operationId": "getPayment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "in": "query",
+            "description": "The side to see it from, for a key attached to both accounts. Default: the paying side if the key is on it.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The payment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/payment"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such payment, or not visible to this key.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payments/{id}/refunds": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Refund a payment",
+        "description": "Returns all or part of a payment your account received to the account that sent it. A payment can be refunded once. TxGold's fee on the original payment is not returned.",
+        "operationId": "refundPayment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/refundCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The refund, a payment whose refundOf is the original.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/payment"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "already_refunded",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "refund_exceeds_original, insufficient_balance and the other business rules.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/sandbox/accounts/{accountId}/fund": {
+      "post": {
+        "tags": [
+          "Sandbox"
+        ],
+        "summary": "Add test TxGold to an account (Sandbox only)",
+        "description": "Pays test TxGold into one of your accounts, or one of its demo customers, from TxGold's Holding account. Not available in production.",
+        "operationId": "sandboxFundAccount",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/sandboxFund"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "The funding payment, a credit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/payment"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The account does not exist, or is neither yours nor one of your demo customers.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "sandbox_unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/sandbox/payment-requests/{id}/pay": {
+      "post": {
+        "tags": [
+          "Sandbox"
+        ],
+        "summary": "Have a demo customer pay a payment request (Sandbox only)",
+        "description": "Pays one of your pending payment requests from the demo customer it was sent to, exactly as the customer would in the TxGold app, so you can test your flow without a phone. The customer is funded first if short. Not available in production.",
+        "operationId": "sandboxPayPaymentRequest",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The customer's payment, as your account sees it (a credit).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/payment"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "request_not_pending",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "payer_not_demo_customer, and the business rules a payment can break.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "account": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Account id. A string: do not do arithmetic on it."
+          },
+          "accountName": {
+            "type": "string",
+            "description": "The account's handle, without the leading @. Null if it has none."
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Name shown to people paying or being paid by this account."
+          },
+          "type": {
+            "type": "string",
+            "description": "personal, business or charity. Other values may be added."
+          },
+          "tier": {
+            "type": "integer",
+            "description": "Verification tier, which sets the account's limits.",
+            "format": "int32"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "False when the account has been deactivated and cannot send or receive."
+          },
+          "balance": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "description": "TxGold balance as a decimal string. Null unless the key's role may see it (Admin, Manager, Integration).",
+            "format": "decimal",
+            "example": "12.50"
+          }
+        }
+      },
+      "accountLookup": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "accountName": {
+            "type": "string",
+            "description": "The account's handle, without the leading @."
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "description": "business or charity."
+          }
+        }
+      },
+      "accountTransaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The payment's id; GET /v1/payments/{id}?accountId= returns it in full."
+          },
+          "direction": {
+            "type": "string",
+            "description": "debit when the account paid, credit when it was paid."
+          },
+          "amount": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "format": "decimal",
+            "example": "12.50"
+          },
+          "fee": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "description": "TxGold's fee on a credit, which the recipient pays. Null on a debit.",
+            "format": "decimal",
+            "example": "12.50"
+          },
+          "counterparty": {
+            "$ref": "#/components/schemas/counterparty"
+          },
+          "memo": {
+            "type": "string"
+          },
+          "memoInternal": {
+            "type": "string",
+            "description": "The payer's own reference. On debits only."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "paymentRequestId": {
+            "type": "string",
+            "description": "The payment request this payment paid, if any."
+          },
+          "refundOf": {
+            "type": "string",
+            "description": "When this payment is a refund: the payment it refunds."
+          },
+          "refundId": {
+            "type": "string",
+            "description": "The refund of this payment, if it has been refunded."
+          },
+          "balanceAfter": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "description": "The account's balance after this payment and its fee. Null unless the key's role may see the balance (Admin, Manager, Integration).",
+            "format": "decimal",
+            "example": "12.50"
+          },
+          "estimatedUsdValue": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "description": "What the TxGold was worth in US dollars at the gold price of that moment. Null for payments older than TxGold's price history.",
+            "format": "decimal",
+            "example": "12.50"
+          },
+          "actualUsdValue": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "description": "US dollars that really changed hands, where there were any (a crypto deposit). Null otherwise.",
+            "format": "decimal",
+            "example": "12.50"
+          }
+        }
+      },
+      "apiProblem": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "URI of the documentation page for this error code.",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "description": "Short summary of the error code.",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "description": "The HTTP status code, repeated.",
+            "format": "int32",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "description": "Stable machine-readable error code, e.g. insufficient_balance. Switch on this, not on detail.",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "description": "Human-readable explanation of this occurrence. The wording may change.",
+            "nullable": true
+          },
+          "requestId": {
+            "type": "string",
+            "description": "The X-Request-Id of the request. Quote it when contacting support.",
+            "nullable": true
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/list_string"
+            },
+            "description": "For invalid_request: the problems with each field, keyed by field name.",
+            "nullable": true
+          }
+        }
+      },
+      "counterparty": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string"
+          },
+          "accountName": {
+            "type": "string",
+            "description": "The account's handle, without the leading @. Null if it has none."
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "description": "personal, business or charity. Other values may be added."
+          }
+        },
+        "description": "The other side of the payment."
+      },
+      "list_string": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "page_accountTransaction": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/accountTransaction"
+            }
+          },
+          "nextCursor": {
+            "type": "string"
+          }
+        }
+      },
+      "page_paymentRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/paymentRequest"
+            }
+          },
+          "nextCursor": {
+            "type": "string"
+          }
+        }
+      },
+      "payment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "accountId": {
+            "type": "string",
+            "description": "The account that paid."
+          },
+          "destinationAccountId": {
+            "type": "string",
+            "description": "The account paid."
+          },
+          "direction": {
+            "type": "string",
+            "description": "debit when the signing key's account paid, credit when it was paid."
+          },
+          "amount": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "format": "decimal",
+            "example": "12.50"
+          },
+          "fee": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "description": "TxGold's fee, which the recipient pays. Shown to the recipient only; null for the payer.",
+            "format": "decimal",
+            "example": "12.50"
+          },
+          "memo": {
+            "type": "string"
+          },
+          "memoInternal": {
+            "type": "string",
+            "description": "The payer's own reference. Shown to the payer only."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "paymentRequestId": {
+            "type": "string",
+            "description": "The payment request this payment paid, if any."
+          },
+          "refundOf": {
+            "type": "string",
+            "description": "When this payment is a refund: the payment it refunds."
+          },
+          "refundId": {
+            "type": "string",
+            "description": "The refund of this payment, if it has been refunded (at most once)."
+          },
+          "refundedAmount": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "format": "decimal",
+            "nullable": true,
+            "example": "12.50"
+          },
+          "balanceAfter": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "description": "Only in the response that created the payment: the paying account's balance afterwards, when the key's role may see it.",
+            "format": "decimal",
+            "example": "12.50"
+          }
+        }
+      },
+      "paymentCreate": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "The account paying. The signing key must be attached to it with a role that may send (Admin, Manager or Integration)."
+          },
+          "destinationAccountId": {
+            "type": "string",
+            "description": "The account paid. Optional with paymentRequestId, which pays the account that made the request."
+          },
+          "amount": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "description": "Amount of TxGold, as a decimal string with at most 2 places. Must equal the request's amount with paymentRequestId.",
+            "format": "decimal",
+            "example": "12.50"
+          },
+          "memo": {
+            "type": "string",
+            "description": "Shown to both sides. At most 150 characters."
+          },
+          "memoInternal": {
+            "type": "string",
+            "description": "Your own reference, never shown to the recipient. At most 150 characters."
+          },
+          "paymentRequestId": {
+            "type": "string",
+            "description": "Pays this pending payment request, addressed to accountId, and marks it paid."
+          }
+        }
+      },
+      "paymentRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "pending, paid, dismissed (by the payer), cancelled (by you) or expired. Other values may be added."
+          },
+          "accountId": {
+            "type": "string",
+            "description": "The account to be paid."
+          },
+          "payerAccountId": {
+            "type": "string"
+          },
+          "amount": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "format": "decimal",
+            "nullable": true,
+            "example": "12.50"
+          },
+          "memo": {
+            "type": "string"
+          },
+          "memoInternal": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "statusChangedAt": {
+            "type": "string",
+            "description": "When the status last changed (paid, dismissed or cancelled). Null while pending or expired.",
+            "format": "date-time"
+          },
+          "paymentId": {
+            "type": "string",
+            "description": "The payment that paid it, once paid."
+          }
+        }
+      },
+      "paymentRequestCreate": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "The business account to be paid. The signing key must be attached to it."
+          },
+          "payerAccountId": {
+            "type": "string",
+            "description": "The TxGold account asked to pay. Its owner gets a push notification and sees the request in the app."
+          },
+          "amount": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "description": "Amount of TxGold, as a decimal string with at most 2 places. The payer must pay exactly this.",
+            "format": "decimal",
+            "example": "12.50"
+          },
+          "memo": {
+            "type": "string",
+            "description": "Shown to the payer, and becomes the payment's memo. At most 150 characters."
+          },
+          "memoInternal": {
+            "type": "string",
+            "description": "Your own reference, never shown to the payer. At most 150 characters."
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "When the request stops being payable, ISO 8601. Default and maximum: 7 days from now."
+          }
+        }
+      },
+      "rate": {
+        "type": "object",
+        "properties": {
+          "usdPerTxGold": {
+            "type": "string",
+            "description": "US dollars per TxGold, to 6 decimal places. One TxGold is a thousandth of a troy ounce of gold."
+          },
+          "usdPerTroyOunce": {
+            "type": "string",
+            "description": "The gold price the rate comes from: US dollars per troy ounce."
+          },
+          "asOf": {
+            "type": "string",
+            "description": "When that gold price was taken (UTC). Prices are refreshed every half hour.",
+            "format": "date-time"
+          }
+        }
+      },
+      "refundCreate": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "description": "Amount to refund, at most what was paid. Leave out to refund the whole payment.",
+            "format": "decimal",
+            "example": "12.50"
+          },
+          "memo": {
+            "type": "string",
+            "description": "Shown to both sides. At most 150 characters."
+          },
+          "memoInternal": {
+            "type": "string",
+            "description": "Your own reference. At most 150 characters."
+          }
+        }
+      },
+      "sandboxFund": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "description": "Test TxGold to add, as a decimal string with at most 2 places. At most 1000.00 per call.",
+            "format": "decimal",
+            "example": "12.50"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "TXG1": {
+        "type": "apiKey",
+        "description": "Every request carries three headers: TxG-Key-Id (your key's base64 SubjectPublicKeyInfo, the keyId in your key file), TxG-Timestamp (UTC .NET ticks, within 240 seconds of server time; it is also the request's idempotency key) and TxG-Signature (base64 ECDSA P-256 SHA-256 over the canonical string, P1363 or DER):\n\n    TXG1-ECDSA-P256-SHA256\\nMETHOD\\nPATH\\nQUERY\\nTIMESTAMP\\nhex(sha256(body bytes))\n\nThe SDKs do this for you. See https://docs.txgold.money/authentication.",
+        "name": "TxG-Signature",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "TXG1": []
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+name: SDKs
+
+# Unit tests and the shared signing vectors for every SDK, on each supported runtime. The Sandbox
+# tour runs too when the repository has a Sandbox key (secret TXGOLD_SANDBOX_KEY_JSON, the whole key
+# file, plus variables TXGOLD_SANDBOX_ACCOUNT_ID and TXGOLD_SANDBOX_CUSTOMER_ID).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  javascript:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['18', '20', '22']
+    defaults:
+      run:
+        working-directory: sdk/javascript
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm install --no-audit --no-fund
+      - run: npm test
+      - run: npm run build
+
+  python:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.9', '3.12', '3.13']
+    defaults:
+      run:
+        working-directory: sdk/python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install -e ".[dev]"
+      - run: pytest -q
+
+  csharp:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sdk/csharp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+      - run: dotnet test -c Release
+      - run: dotnet pack src/TxGold.Business/TxGold.Business.csproj -c Release -o ../../artifacts
+
+  sandbox-tour:
+    needs: [javascript, python, csharp]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      KEY_JSON: ${{ secrets.TXGOLD_SANDBOX_KEY_JSON }}
+      TXGOLD_ACCOUNT_ID: ${{ vars.TXGOLD_SANDBOX_ACCOUNT_ID }}
+      TXGOLD_CUSTOMER_ID: ${{ vars.TXGOLD_SANDBOX_CUSTOMER_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        if: env.KEY_JSON != ''
+      - name: Write the key file
+        if: env.KEY_JSON != ''
+        run: |
+          printf '%s' "$KEY_JSON" > "$RUNNER_TEMP/sandbox.key.json"
+          echo "TXGOLD_KEY_FILE=$RUNNER_TEMP/sandbox.key.json" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v4
+        if: env.KEY_JSON != ''
+        with:
+          node-version: '22'
+      - name: JavaScript tour
+        if: env.KEY_JSON != ''
+        run: |
+          (cd sdk/javascript && npm install --no-audit --no-fund && npm run build)
+          cd samples/javascript && npm install --no-save --no-audit --no-fund ../../sdk/javascript && node tour.mjs
+      - name: Skipped
+        if: env.KEY_JSON == ''
+        run: echo "No TXGOLD_SANDBOX_KEY_JSON secret; the Sandbox tour is skipped."

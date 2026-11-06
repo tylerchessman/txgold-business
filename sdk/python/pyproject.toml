@@ -1,0 +1,34 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "txgold-business"
+version = "0.1.0"
+description = "TxGold Business API client: signed requests, payments, payment requests, accounts."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+dependencies = [
+    "cryptography>=41",
+    "httpx>=0.25,<1",
+]
+keywords = ["txgold", "payments", "gold", "api"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Typing :: Typed",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.urls]
+Homepage = "https://docs.txgold.money"
+Source = "https://github.com/tylerchessman/txgold-business"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/txgold_business"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

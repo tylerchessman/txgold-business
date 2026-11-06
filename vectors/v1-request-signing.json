@@ -1,0 +1,32 @@
+{
+  "description": "Reference vectors for TxGold Business API v1 request signing (TXG1-ECDSA-P256-SHA256). The private key was discarded: an SDK passes if it builds each canonical string exactly and the server-side verifier accepts both signatures. ECDSA signatures are randomized, so an SDK's own signatures will differ; verify them against publicKeySpkiBase64 instead of comparing bytes.",
+  "publicKeySpkiBase64": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE1+tnfQaZILj6mqeSwy5LmFIdMfR8R52gBv0OLRjLyMyCKLSUloACAYa3ilbMUuMN9yHfvlw6jpSDBAI2tlTqQA==",
+  "cases": [
+    {
+      "name": "post-with-non-ascii-body",
+      "method": "POST",
+      "path": "/v1/payments",
+      "query": "",
+      "timestamp": "639283104000000000",
+      "bodyUtf8": "{\"accountId\":\"1000007\",\"destinationAccountId\":\"1000006\",\"amount\":\"0.50\",\"memo\":\"Café ☕ – é\"}",
+      "bodyBase64": "eyJhY2NvdW50SWQiOiIxMDAwMDA3IiwiZGVzdGluYXRpb25BY2NvdW50SWQiOiIxMDAwMDA2IiwiYW1vdW50IjoiMC41MCIsIm1lbW8iOiJDYWbDqSDimJUg4oCTIMOpIn0=",
+      "bodySha256Hex": "f0b032578179c4da1391de7762c614bc6b59d4f3fcc1eab2960baebcc9f062a0",
+      "canonical": "TXG1-ECDSA-P256-SHA256\nPOST\n/v1/payments\n\n639283104000000000\nf0b032578179c4da1391de7762c614bc6b59d4f3fcc1eab2960baebcc9f062a0",
+      "signatureP1363Base64": "LO3cNDO8EE+/9eYUY9HODln9SHM/EXxerwr+MmASapPfh1emEIxOn102urjRx6nT8oQ7Zg+0cr785mImOHcRYg==",
+      "signatureDerBase64": "MEUCICJa+x86RtYkuiNYRipH1h8oq5855m8Y2BEI+XKjhwNpAiEAqj2bkWXA9EaDIM7e1LgBZp2HryGrhuTGyfcD+07a/IQ="
+    },
+    {
+      "name": "get-with-query-and-empty-body",
+      "method": "GET",
+      "path": "/v1/accounts/1000007/transactions",
+      "query": "limit=50&cursor=eyJpZCI6MjN9",
+      "timestamp": "639283104000000000",
+      "bodyUtf8": "",
+      "bodyBase64": "",
+      "bodySha256Hex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "canonical": "TXG1-ECDSA-P256-SHA256\nGET\n/v1/accounts/1000007/transactions\nlimit=50&cursor=eyJpZCI6MjN9\n639283104000000000\ne3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "signatureP1363Base64": "GeU54AnysJxNW6PNHCd5tTy7YAcSG/pozcBjlBEan8QGz8431s4Lvk+kV1q76Gth4mAumR3lzTNfoicCdbS3MQ==",
+      "signatureDerBase64": "MEQCIGXbfABZVgjxWd/sbVRvkcgfG2bJrZ/9WJRbhFUthzgwAiBWwqvxIU0aBFUX2a9emIV8WskZ7c+E1JPp4S0VS3YbVQ=="
+    }
+  ]
+}
