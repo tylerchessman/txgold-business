@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <!-- In the box on .NET 8; a package on netstandard2.1 -->
