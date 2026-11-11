@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "txgold-business"
-version = "0.1.0"
+version = "0.2.0"
 description = "TxGold Business API client: signed requests, payments, payment requests, accounts."
 readme = "README.md"
 license = "MIT"

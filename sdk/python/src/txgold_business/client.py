@@ -16,7 +16,7 @@ from .keys import SigningKey, load_key_file
 from .models import Account, AccountLookup, AccountTransaction, Page, Payment, PaymentRequest, Rate
 from .signing import TimestampClock, canonical_string, sign_canonical
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 #: The API's base URL per environment. Production is added when it opens.
 BASE_URLS: Dict[str, str] = {
@@ -208,17 +208,28 @@ class PaymentRequests:
     def create(
         self,
         account_id: str,
-        payer_account_id: str,
-        amount: Amount,
+        payer_account_id: Optional[str] = None,
+        amount: Optional[Amount] = None,
         *,
+        payer_handle: Optional[str] = None,
         memo: Optional[str] = None,
         memo_internal: Optional[str] = None,
+        tag: Optional[str] = None,
         expires_at: Optional[str] = None,
         timestamp: Optional[str] = None,
     ) -> PaymentRequest:
-        """Asks ``payer_account_id`` to pay ``account_id`` (yours). ``expires_at`` at most 7 days ahead."""
-        body = _body(accountId=account_id, payerAccountId=payer_account_id, amount=_amount(amount),
-                     memo=memo, memoInternal=memo_internal, expiresAt=expires_at)
+        """Asks for a payment to ``account_id`` (yours).
+
+        Name the payer by ``payer_account_id`` or by ``payer_handle`` (a TxGold handle, the @ optional;
+        the payer's id is then never returned), or by neither for an open request: anyone with its
+        ``paymentUrl`` can pay it once. ``amount`` is required. ``tag`` is your own label, never shown
+        to the payer. ``expires_at``: at most 7 days ahead for a named payer, 90 days for an open
+        request (default 30).
+        """
+        if amount is None:
+            raise TypeError("amount is required.")
+        body = _body(accountId=account_id, payerAccountId=payer_account_id, payerHandle=payer_handle,
+                     amount=_amount(amount), memo=memo, memoInternal=memo_internal, tag=tag, expiresAt=expires_at)
         return cast(PaymentRequest, self._client.request("POST", "/v1/payment-requests", body=body, timestamp=timestamp))
 
     def get(self, request_id: str) -> PaymentRequest:
@@ -282,6 +293,12 @@ class Sandbox:
         return cast(Payment, self._client.request("POST", f"/v1/sandbox/accounts/{_segment(account_id)}/fund",
                                                   body={"amount": _amount(amount)}))
 
-    def pay_request(self, request_id: str) -> Payment:
-        """Has the demo customer a pending request was sent to pay it, as they would in the app."""
-        return cast(Payment, self._client.request("POST", f"/v1/sandbox/payment-requests/{_segment(request_id)}/pay"))
+    def pay_request(self, request_id: str, payer_account_id: Optional[str] = None) -> Payment:
+        """Has a demo customer pay a pending request, as they would in the app.
+
+        A request to a named payer is paid by that payer. An open request is paid by
+        ``payer_account_id`` (one of your demo customers), else by your first demo customer.
+        """
+        body = None if payer_account_id is None else {"payerAccountId": payer_account_id}
+        return cast(Payment, self._client.request("POST", f"/v1/sandbox/payment-requests/{_segment(request_id)}/pay",
+                                                  body=body))

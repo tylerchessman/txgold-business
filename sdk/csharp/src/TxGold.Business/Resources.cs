@@ -40,7 +40,10 @@ public sealed class PaymentRequestsResource
     private readonly TxGoldClient _client;
     internal PaymentRequestsResource(TxGoldClient client) => _client = client;
 
-    /// <summary>Asks the payer to pay your account.</summary>
+    /// <summary>
+    /// Asks the payer to pay your account, or with no payer named, makes an open request whose
+    /// <see cref="PaymentRequest.PaymentUrl"/> anyone can pay once.
+    /// </summary>
     public Task<PaymentRequest> CreateAsync(PaymentRequestCreate request, string? timestamp = null, CancellationToken cancellationToken = default) =>
         _client.SendAsync<PaymentRequest>(HttpMethod.Post, "/v1/payment-requests", body: request, timestamp: timestamp, cancellationToken: cancellationToken);
 
@@ -129,10 +132,28 @@ public sealed class SandboxResource
         _client.SendAsync<Payment>(HttpMethod.Post, $"/v1/sandbox/accounts/{PaymentsResource.Segment(accountId)}/fund",
             body: new FundBody { Amount = amount }, cancellationToken: cancellationToken);
 
-    /// <summary>Has the demo customer a pending request was sent to pay it, as they would in the app.</summary>
+    /// <summary>
+    /// Has the demo customer a pending request was sent to pay it, as they would in the app. An open request
+    /// is paid by your first demo customer.
+    /// </summary>
     public Task<Payment> PayRequestAsync(string requestId, CancellationToken cancellationToken = default) =>
+        PayRequestAsync(requestId, null, cancellationToken);
+
+    /// <summary>
+    /// Has a demo customer pay a pending request, as they would in the app. <paramref name="payerAccountId"/>
+    /// picks which of your demo customers pays an open request (null: your first); it is ignored for a request
+    /// to a named payer.
+    /// </summary>
+    public Task<Payment> PayRequestAsync(string requestId, string? payerAccountId, CancellationToken cancellationToken = default) =>
         _client.SendAsync<Payment>(HttpMethod.Post, $"/v1/sandbox/payment-requests/{PaymentsResource.Segment(requestId)}/pay",
+            // No body at all unless a payer is named; the signature covers the (empty) body as sent
+            body: payerAccountId is null ? null : new PayBody { PayerAccountId = payerAccountId },
             cancellationToken: cancellationToken);
+
+    private sealed class PayBody
+    {
+        public string? PayerAccountId { get; init; }
+    }
 
     private sealed class FundBody
     {

@@ -56,19 +56,35 @@ public sealed record Payment(
     [property: JsonConverter(typeof(NullableMoneyConverter))] decimal? RefundedAmount,
     [property: JsonConverter(typeof(NullableMoneyConverter))] decimal? BalanceAfter);
 
-/// <summary>A request for a payment from another account.</summary>
+/// <summary>
+/// A request for a payment from another account. <see cref="PayerAccountId"/> is null for an open request
+/// until it is paid, and always null when the request named its payer by handle.
+/// </summary>
 public sealed record PaymentRequest(
     string Id,
     string Status,
     string AccountId,
-    string PayerAccountId,
+    string? PayerAccountId,
     [property: JsonConverter(typeof(MoneyConverter))] decimal Amount,
     string? Memo,
     string? MemoInternal,
     DateTimeOffset CreatedAt,
     DateTimeOffset ExpiresAt,
     DateTimeOffset? StatusChangedAt,
-    string? PaymentId);
+    string? PaymentId)
+{
+    /// <summary>True for an open request: no payer named, payable once by anyone with its <see cref="PaymentUrl"/>.</summary>
+    public bool IsOpen { get; init; }
+
+    /// <summary>Your own label for the request, never shown to the payer.</summary>
+    public string? Tag { get; init; }
+
+    /// <summary>
+    /// An open request's link: opens the TxGold app on this request. Share it, or draw it as a QR code.
+    /// Null for a request to a named payer.
+    /// </summary>
+    public string? PaymentUrl { get; init; }
+}
 
 /// <summary>The TxGold rate.</summary>
 public sealed record Rate(
@@ -113,14 +129,23 @@ public sealed class RefundCreate
     public string? MemoInternal { get; init; }
 }
 
-/// <summary>A payment request to send.</summary>
+/// <summary>
+/// A payment request to send. Name the payer by <see cref="PayerAccountId"/> or <see cref="PayerHandle"/>, or
+/// neither for an open request that anyone with its <see cref="PaymentRequest.PaymentUrl"/> can pay once.
+/// </summary>
 public sealed class PaymentRequestCreate
 {
     /// <summary>Your account, which will be paid.</summary>
     public required string AccountId { get; init; }
 
-    /// <summary>The account asked to pay.</summary>
-    public required string PayerAccountId { get; init; }
+    /// <summary>The account asked to pay. Not with <see cref="PayerHandle"/>.</summary>
+    public string? PayerAccountId { get; init; }
+
+    /// <summary>
+    /// The payer by TxGold handle (a leading @ is ignored), instead of <see cref="PayerAccountId"/>: what a
+    /// customer types at your checkout. The payer's account id is then never returned.
+    /// </summary>
+    public string? PayerHandle { get; init; }
 
     /// <summary>At most 2 decimal places.</summary>
     [JsonConverter(typeof(MoneyConverter))]
@@ -132,8 +157,14 @@ public sealed class PaymentRequestCreate
     /// <summary>Your own reference.</summary>
     public string? MemoInternal { get; init; }
 
-    /// <summary>At most 7 days ahead; the API's default when null.</summary>
+    /// <summary>
+    /// When the request stops being payable; the API's default when null. To a payer: default and maximum
+    /// 7 days ahead. An open request: default 30 days, maximum 90.
+    /// </summary>
     public DateTimeOffset? ExpiresAt { get; init; }
+
+    /// <summary>Your own label (a till, a device, a campaign), never shown to the payer; up to 50 characters.</summary>
+    public string? Tag { get; init; }
 }
 
 /// <summary>Money on the wire: a decimal string such as "12.50", never a JSON number.</summary>

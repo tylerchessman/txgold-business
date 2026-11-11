@@ -125,3 +125,49 @@ def test_list_all_follows_next_cursor():
 def test_unknown_environment_needs_base_url():
     with pytest.raises(ValueError, match="pass base_url"):
         TxGoldClient(KEY, environment="production")
+
+
+def test_payment_request_to_a_payer_by_id_positional_as_before():
+    sent, http = fake([(201, {"id": "7", "isOpen": False})])
+    client(http).payment_requests.create("1000002", "1000004", "0.50", memo="Order 42")
+    assert json.loads(sent[0].content) == {"accountId": "1000002", "payerAccountId": "1000004", "amount": "0.50", "memo": "Order 42"}
+    assert_signed(sent[0])
+
+
+def test_payment_request_to_a_payer_by_handle():
+    sent, http = fake([(201, {"id": "7", "payerAccountId": None, "isOpen": False})])
+    client(http).payment_requests.create("1000002", amount="1.25", payer_handle="@Jason-Miles", tag="web")
+    assert json.loads(sent[0].content) == {"accountId": "1000002", "payerHandle": "@Jason-Miles", "amount": "1.25", "tag": "web"}
+    assert_signed(sent[0])
+
+
+def test_open_payment_request_names_no_payer():
+    url = "https://app.txgold.money/RequestPayment?AccountId=1000002&AccountName=acme&Amt=2.00&Request=9"
+    sent, http = fake([(201, {"id": "9", "isOpen": True, "payerAccountId": None, "tag": "till-1", "paymentUrl": url})])
+    request = client(http).payment_requests.create("1000002", amount=Decimal("2"), memo="Coffee", tag="till-1",
+                                                   expires_at="2026-11-11T12:15:00Z")
+    body = json.loads(sent[0].content)
+    assert body == {"accountId": "1000002", "amount": "2.00", "memo": "Coffee", "tag": "till-1", "expiresAt": "2026-11-11T12:15:00Z"}
+    assert request["isOpen"] and request["paymentUrl"] == url
+    with pytest.raises(TypeError):
+        client(http).payment_requests.create("1000002")
+
+
+def test_sandbox_pay_request_body_only_when_a_payer_is_given():
+    sent, http = fake([(201, {"id": "1"}), (201, {"id": "2"})])
+    c = client(http)
+    c.sandbox.pay_request("9")
+    c.sandbox.pay_request("9", "1000004")
+    assert sent[0].url.path == "/v1/sandbox/payment-requests/9/pay"
+    assert sent[0].content == b"" and "Content-Type" not in sent[0].headers
+    assert json.loads(sent[1].content) == {"payerAccountId": "1000004"}
+    for request in sent:
+        assert_signed(request)
+
+
+@pytest.mark.parametrize("code", ["request_not_pending", "payment_request_already_paid", "some_future_code"])
+def test_conflict_codes_pass_through(code):
+    _, http = fake([(409, {"title": "Conflict", "status": 409, "code": code})])
+    with pytest.raises(TxGoldApiError) as error:
+        client(http).payments.create("1000004", "1.00", payment_request_id="9")
+    assert (error.value.status, error.value.code) == (409, code)

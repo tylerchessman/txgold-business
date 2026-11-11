@@ -90,7 +90,7 @@
     "code": "request_not_pending",
     "status": 409,
     "title": "Payment request is not pending",
-    "meaning": "The payment request was already paid, dismissed, cancelled or has expired, so it can't be paid or cancelled.",
+    "meaning": "The payment request was already paid, dismissed, cancelled or has expired, so it can't be paid or cancelled. An open request stops being pending as soon as anyone pays it.",
     "fix": "Fetch the request to see its `status`. Create a new request if the customer still needs to pay."
   },
   {
@@ -197,15 +197,15 @@
     "code": "payer_account_invalid",
     "status": 422,
     "title": "Payer account invalid",
-    "meaning": "The account asked to pay doesn't exist or can't be asked to pay.",
-    "fix": "Check `payerAccountId`."
+    "meaning": "The account asked to pay doesn't exist or can't be asked to pay, or no account has the `payerHandle` you gave.",
+    "fix": "Check `payerAccountId`, or the handle: it must match an account's handle exactly (a leading @ is ignored)."
   },
   {
     "code": "payer_not_demo_customer",
     "status": 422,
     "title": "Payer is not a sandbox demo customer",
-    "meaning": "Sandbox only: `simulate pay` works only for requests sent to one of your business's demo customers.",
-    "fix": "Create the request for one of the demo customers you were given with your Sandbox business."
+    "meaning": "Sandbox only: `simulate pay` works only for requests sent to one of your business's demo customers, and for open requests paid by one.",
+    "fix": "Create the request for one of the demo customers you were given with your Sandbox business. For an open request, name one of them as `payerAccountId`, or leave it out to use the first."
   },
   {
     "code": "business_rule_violation",
@@ -247,7 +247,7 @@
     "code": "payment_request_already_paid",
     "status": 409,
     "title": "Payment request already paid",
-    "meaning": "Not documented yet.",
-    "fix": "Not documented yet."
+    "meaning": "Someone has already paid this open payment request. An open request (one made with no payer) can be paid once, by whoever pays first; a second payment is refused and nothing moves. Through the API a second attempt is normally refused earlier, with `request_not_pending`. This code is what a payment gets when it reaches the ledger anyway: two payers in the same instant, or a payer in the TxGold app.",
+    "fix": "Fetch the request: it's `paid`, and `paymentId` is the payment that paid it. If this customer still owes you, create a new request for them."
   }
 ]

@@ -10,7 +10,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
     <PackageId>TxGold.Business</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <Authors>TxGold</Authors>
     <Description>TxGold Business API client: signed requests, payments, payment requests, accounts.</Description>
     <PackageTags>txgold;payments;gold;api</PackageTags>

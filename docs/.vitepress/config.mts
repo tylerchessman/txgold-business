@@ -41,6 +41,7 @@ export default defineConfig({
       {
         text: 'Guides',
         items: [
+          { text: 'Ways to get paid', link: '/guides/ways-to-get-paid' },
           { text: 'Payments and refunds', link: '/guides/payments' },
           { text: 'Payment requests', link: '/guides/payment-requests' },
           { text: 'Accounts and history', link: '/guides/accounts' },
