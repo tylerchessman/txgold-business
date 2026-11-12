@@ -95,7 +95,13 @@ export interface PaymentRequest {
   id: string;
   status: PaymentRequestStatus;
   accountId: string;
-  payerAccountId: string;
+  /**
+   * The account asked to pay. Null for an open request until it is paid (then the account that
+   * paid it), and always null when the request named its payer by payerHandle.
+   */
+  payerAccountId: string | null;
+  /** True for an open request: no payer named, payable once by anyone with its paymentUrl. */
+  isOpen: boolean;
   amount: string;
   memo: string | null;
   memoInternal: string | null;
@@ -103,18 +109,48 @@ export interface PaymentRequest {
   expiresAt: string;
   statusChangedAt: string | null;
   paymentId: string | null;
+  /** Your own label for the request; never shown to the payer. */
+  tag: string | null;
+  /**
+   * An open request's link: opens the TxGold app on this request. Share it, or draw it as a QR
+   * code. Null for a request to a named payer.
+   */
+  paymentUrl: string | null;
 }
 
 export interface PaymentRequestCreate {
   /** Your account, which will be paid. */
   accountId: string;
-  /** The account asked to pay. */
-  payerAccountId: string;
+  /**
+   * The account asked to pay: its owner gets a push notification. Give this, or payerHandle, or
+   * neither for an open request that anyone with its paymentUrl can pay once.
+   */
+  payerAccountId?: string;
+  /**
+   * The payer by TxGold handle (a leading @ is ignored), instead of payerAccountId: what a
+   * customer types at your checkout. The payer's account id is then never returned.
+   */
+  payerHandle?: string;
   amount: string;
+  /** Shown to the payer. At most 150 characters. */
   memo?: string;
+  /** Never shown to the payer. At most 150 characters. */
   memoInternal?: string;
-  /** At most 7 days ahead. */
+  /**
+   * When the request stops being payable. A request to a payer: default and maximum 7 days ahead.
+   * An open request: default 30 days, maximum 90.
+   */
   expiresAt?: string;
+  /** Your own label (a till, a device, a campaign), never shown to the payer. At most 50 characters. */
+  tag?: string;
+}
+
+export interface SandboxPayRequest {
+  /**
+   * For an open request: which of your demo customers pays it. Default: your first demo customer.
+   * Ignored for a request to a named payer.
+   */
+  payerAccountId?: string;
 }
 
 export interface Rate {

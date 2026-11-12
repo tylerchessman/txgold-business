@@ -45,6 +45,17 @@ up first if they're short, then pays exactly as in the app, so the request is ma
 payment appears in your history. SDKs: `sandbox.payRequest` / `sandbox.pay_request` /
 `Sandbox.PayRequestAsync`.
 
+An [open request](/guides/payment-requests#open-requests) has no payer, so say which demo customer
+pays it; leave the body out and your first demo customer does:
+
+```http
+POST /v1/sandbox/payment-requests/{id}/pay
+{ "payerAccountId": "1000004" }
+```
+
+An open request's `paymentUrl` opens the real TxGold app, which can't see Sandbox requests. In the
+Sandbox, show the link or QR to check your screens, and pay it with the route above.
+
 ## What's the same
 
 Everything else: the routes, signing, roles, limits, errors and fees behave as in Production. The

@@ -160,6 +160,86 @@ public class ClientTests
         Assert.Equal(("next", "pending"), (query["cursor"], query["status"]));
     }
 
+    private static object RequestJson(bool isOpen, string? payerAccountId = null, string? tag = null, string? paymentUrl = null) => new
+    {
+        id = "77", status = "pending", accountId = "1000002", payerAccountId, isOpen, amount = "1.50", memo = "Invoice 4411",
+        createdAt = "2026-11-06T00:00:00.000Z", expiresAt = "2026-12-06T00:00:00.000Z", tag, paymentUrl,
+    };
+
+    [Fact]
+    public async Task An_open_request_names_no_payer_and_returns_its_paymentUrl()
+    {
+        const string url = "https://app.txgold.money/RequestPayment?AccountId=1000002&AccountName=Acme&Amt=1.50&Memo=Invoice%204411&Request=77";
+        var (client, handler) = Client(0, Ok(RequestJson(true, tag: "till-1", paymentUrl: url), HttpStatusCode.Created));
+        var request = await client.PaymentRequests.CreateAsync(new PaymentRequestCreate
+        {
+            AccountId = "1000002", Amount = 1.50m, Memo = "Invoice 4411", Tag = "till-1",
+        });
+
+        Assert.Equal((true, null, "till-1", url), (request.IsOpen, request.PayerAccountId, request.Tag, request.PaymentUrl));
+        var s = Assert.Single(handler.Sent);
+        string body = Encoding.UTF8.GetString(s.Body);
+        Assert.Contains("\"tag\":\"till-1\"", body);
+        Assert.DoesNotContain("payerAccountId", body);
+        Assert.DoesNotContain("payerHandle", body);
+        AssertSigned(s);
+    }
+
+    [Fact]
+    public async Task A_request_by_handle_sends_payerHandle()
+    {
+        var (client, handler) = Client(0, Ok(RequestJson(false), HttpStatusCode.Created));
+        var request = await client.PaymentRequests.CreateAsync(new PaymentRequestCreate
+        {
+            AccountId = "1000002", PayerHandle = "@Jason-Miles", Amount = 1.50m,
+        });
+
+        Assert.False(request.IsOpen);
+        Assert.Null(request.PayerAccountId); // never returned for a request by handle
+        Assert.Null(request.PaymentUrl);
+        string body = Encoding.UTF8.GetString(handler.Sent[0].Body);
+        Assert.Contains("\"payerHandle\":\"@Jason-Miles\"", body);
+        Assert.DoesNotContain("payerAccountId", body);
+    }
+
+    [Fact]
+    public async Task A_request_to_a_payer_account_still_works_as_before()
+    {
+        var (client, handler) = Client(0, Ok(new { id = "5", status = "pending", accountId = "1", payerAccountId = "2", amount = "1.00",
+            createdAt = "2026-11-06T00:00:00.000Z", expiresAt = "2026-11-07T00:00:00.000Z" }, HttpStatusCode.Created));
+        var request = await client.PaymentRequests.CreateAsync(new PaymentRequestCreate { AccountId = "1", PayerAccountId = "2", Amount = 1m });
+
+        Assert.Equal(("2", false, null), (request.PayerAccountId, request.IsOpen, request.Tag)); // fields absent from older responses default
+        Assert.Contains("\"payerAccountId\":\"2\"", Encoding.UTF8.GetString(handler.Sent[0].Body));
+    }
+
+    [Fact]
+    public async Task Sandbox_pay_sends_no_body_unless_a_payer_is_named()
+    {
+        var (client, handler) = Client(0, Ok(PaymentJson, HttpStatusCode.Created), Ok(PaymentJson, HttpStatusCode.Created));
+        await client.Sandbox.PayRequestAsync("77");
+        await client.Sandbox.PayRequestAsync("77", "1000004");
+
+        Assert.Equal("/v1/sandbox/payment-requests/77/pay", handler.Sent[0].Uri.AbsolutePath);
+        Assert.Empty(handler.Sent[0].Body);
+        Assert.Equal("{\"payerAccountId\":\"1000004\"}", Encoding.UTF8.GetString(handler.Sent[1].Body));
+        AssertSigned(handler.Sent[0]);
+        AssertSigned(handler.Sent[1]);
+    }
+
+    [Theory]
+    [InlineData(409, "payment_request_already_paid")]
+    [InlineData(409, "request_not_pending")]
+    [InlineData(422, "payer_account_invalid")]
+    [InlineData(418, "a_code_this_SDK_has_never_seen")]
+    public async Task Any_error_code_passes_through(int status, string code)
+    {
+        var (client, _) = Client(0, Ok(new { status, code, title = "t" }, (HttpStatusCode)status));
+        var error = await Assert.ThrowsAsync<TxGoldApiException>(() =>
+            client.Payments.CreateAsync(new PaymentCreate { AccountId = "1", Amount = 1m, PaymentRequestId = "77" }));
+        Assert.Equal((status, code), (error.Status, error.Code));
+    }
+
     [Fact]
     public void An_environment_without_a_known_URL_needs_BaseUrl()
     {

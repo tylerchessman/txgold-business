@@ -1,1 +1,5 @@
-txgold-business>=0.1.0
+# The examples need txgold-business 0.2.0 (open requests, payer_handle, tag). Until 0.2.0 is on
+# PyPI, install this repository's copy first:  pip install -e ../../sdk/python
+txgold-business>=0.2.0
+# QR codes for invoice_link.py, till_qr.py and account_link.py
+segno>=1.6

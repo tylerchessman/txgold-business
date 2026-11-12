@@ -116,3 +116,54 @@ test('listAll follows nextCursor', async () => {
 test('an environment without a known URL needs baseUrl', () => {
   assert.throws(() => new TxGoldClient({ key, environment: 'production' }), /pass baseUrl/);
 });
+
+const bodyOf = (s: Sent) => (s.body.length ? JSON.parse(Buffer.from(s.body).toString('utf8')) : undefined);
+
+test('an open request sends no payer, and its link and tag come back', async () => {
+  const response = { id: '501', status: 'pending', accountId: '1000002', payerAccountId: null, isOpen: true, amount: '4.00',
+    memo: 'Invoice 7', memoInternal: null, createdAt: '2026-11-11T00:00:00Z', expiresAt: '2026-12-11T00:00:00Z',
+    statusChangedAt: null, paymentId: null, tag: 'invoices',
+    paymentUrl: 'https://app.txgold.money/RequestPayment?AccountId=1000002&AccountName=acme&Amt=4.00&Memo=Invoice%207&Request=12' };
+  const { sent, impl } = fakeFetch([{ status: 201, body: response }]);
+  const request = await client(impl).paymentRequests.create({ accountId: '1000002', amount: '4.00', memo: 'Invoice 7', tag: 'invoices' });
+  assert.deepEqual(bodyOf(sent[0]), { accountId: '1000002', amount: '4.00', memo: 'Invoice 7', tag: 'invoices' });
+  assert.equal(request.isOpen, true);
+  assert.equal(request.payerAccountId, null);
+  assert.equal(request.tag, 'invoices');
+  assert.equal(new URL(request.paymentUrl!).searchParams.get('Request'), '12');
+  assertSigned(sent[0]);
+});
+
+test('a request by payer handle sends payerHandle and tag', async () => {
+  const { sent, impl } = fakeFetch([{ status: 201, body: { id: '502', isOpen: false, payerAccountId: null, paymentUrl: null } }]);
+  const request = await client(impl).paymentRequests.create({ accountId: '1000002', payerHandle: '@Jason-Miles', amount: '1.50', tag: 'web' });
+  assert.deepEqual(bodyOf(sent[0]), { accountId: '1000002', payerHandle: '@Jason-Miles', amount: '1.50', tag: 'web' });
+  assert.equal(request.paymentUrl, null);
+  assertSigned(sent[0]);
+});
+
+test('sandbox payRequest sends a body only when a payer is given', async () => {
+  const { sent, impl } = fakeFetch([{ status: 201, body: { id: '1' } }, { status: 201, body: { id: '2' } }, { status: 201, body: { id: '3' } }]);
+  const c = client(impl);
+  await c.sandbox.payRequest('501');
+  await c.sandbox.payRequest('502', { payerAccountId: '1000004' });
+  await c.sandbox.payRequest('503', { timestamp: '639283104000000000' }); // the 0.1 (requestId, options) shape
+  assert.equal(sent[0].url.pathname, '/v1/sandbox/payment-requests/501/pay');
+  assert.equal(sent[0].body.length, 0);
+  assert.equal(sent[0].headers['Content-Type'], undefined);
+  assert.deepEqual(bodyOf(sent[1]), { payerAccountId: '1000004' });
+  assert.equal(sent[1].headers['Content-Type'], 'application/json');
+  assert.equal(sent[2].body.length, 0);
+  assert.equal(sent[2].headers['TxG-Timestamp'], '639283104000000000');
+  for (const s of sent) assertSigned(s);
+});
+
+test('error codes the SDK does not know pass through', async () => {
+  const { impl } = fakeFetch([{ status: 409, body: { code: 'payment_request_already_paid', title: 'Already paid', status: 409 } }]);
+  await assert.rejects(client(impl).payments.create({ accountId: '1', amount: '1.00', paymentRequestId: '501' }), (e: unknown) => {
+    assert.ok(e instanceof TxGoldApiError);
+    assert.equal(e.status, 409);
+    assert.equal(e.code, 'payment_request_already_paid');
+    return true;
+  });
+});

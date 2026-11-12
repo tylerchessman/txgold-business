@@ -254,7 +254,7 @@
           "Payment requests"
         ],
         "summary": "Request a payment",
-        "description": "Asks a TxGold account to pay one of yours. Resending the identical signed request (same TxG-Timestamp) returns the existing request with 200 instead of creating another.",
+        "description": "Asks a TxGold account to pay one of yours, named by payerAccountId or payerHandle. With neither, makes an open request: nobody is notified, and anyone with its paymentUrl can pay it, once. Resending the identical signed request (same TxG-Timestamp) returns the existing request with 200 instead of creating another.",
         "operationId": "createPaymentRequest",
         "requestBody": {
           "content": {
@@ -268,7 +268,7 @@
         },
         "responses": {
           "201": {
-            "description": "Created; the payer was notified if their phone is registered.",
+            "description": "Created; a named payer was notified if their phone is registered. An open request carries its paymentUrl.",
             "content": {
               "application/json": {
                 "schema": {
@@ -809,7 +809,7 @@
           "Sandbox"
         ],
         "summary": "Have a demo customer pay a payment request (Sandbox only)",
-        "description": "Pays one of your pending payment requests from the demo customer it was sent to, exactly as the customer would in the TxGold app, so you can test your flow without a phone. The customer is funded first if short. Not available in production.",
+        "description": "Pays one of your pending payment requests from the demo customer it was sent to, exactly as the customer would in the TxGold app, so you can test your flow without a phone. An open request is paid by the demo customer in payerAccountId, or your first one. The customer is funded first if short. Not available in production.",
         "operationId": "sandboxPayPaymentRequest",
         "parameters": [
           {
@@ -821,6 +821,15 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/sandboxPayRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "201": {
             "description": "The customer's payment, as your account sees it (a credit).",
@@ -1212,7 +1221,12 @@
             "description": "The account to be paid."
           },
           "payerAccountId": {
-            "type": "string"
+            "type": "string",
+            "description": "The account asked to pay. Null for an open request until it is paid, then the account that paid it. Null when the request named its payer by payerHandle."
+          },
+          "isOpen": {
+            "type": "boolean",
+            "description": "True for an open request: no payer named, payable once by anyone with its paymentUrl."
           },
           "amount": {
             "pattern": "^\\d+(\\.\\d{1,2})?$",
@@ -1244,6 +1258,13 @@
           "paymentId": {
             "type": "string",
             "description": "The payment that paid it, once paid."
+          },
+          "tag": {
+            "type": "string"
+          },
+          "paymentUrl": {
+            "type": "string",
+            "description": "An open request's link: opens the TxGold app on this request. Share it, or draw it as a QR code. Changing its amount or memo changes nothing: the request's own are what the payer sees and must pay. Null for a request to a named payer."
           }
         }
       },
@@ -1256,7 +1277,11 @@
           },
           "payerAccountId": {
             "type": "string",
-            "description": "The TxGold account asked to pay. Its owner gets a push notification and sees the request in the app."
+            "description": "The TxGold account asked to pay. Its owner gets a push notification and sees the request in the app. Give this, or payerHandle, or neither for an open request that anyone with its paymentUrl can pay once."
+          },
+          "payerHandle": {
+            "type": "string",
+            "description": "The payer by TxGold handle, e.g. \"Jason-Miles\" (a leading @ is ignored), instead of payerAccountId: what a customer types at your checkout. Any active account. The payer's account id is not returned."
           },
           "amount": {
             "pattern": "^\\d+(\\.\\d{1,2})?$",
@@ -1275,7 +1300,11 @@
           },
           "expiresAt": {
             "type": "string",
-            "description": "When the request stops being payable, ISO 8601. Default and maximum: 7 days from now."
+            "description": "When the request stops being payable, ISO 8601. A request to a payer: default and maximum 7 days from now. An open request: default 30 days, maximum 90."
+          },
+          "tag": {
+            "type": "string",
+            "description": "Your own label for the request (a till, a device, a campaign), never shown to the payer. At most 50 characters."
           }
         }
       },
@@ -1326,6 +1355,15 @@
             "description": "Test TxGold to add, as a decimal string with at most 2 places. At most 1000.00 per call.",
             "format": "decimal",
             "example": "12.50"
+          }
+        }
+      },
+      "sandboxPayRequest": {
+        "type": "object",
+        "properties": {
+          "payerAccountId": {
+            "type": "string",
+            "description": "For an open request: which of your demo customers pays it. Default: your first demo customer. Ignored for a request to a named payer."
           }
         }
       }

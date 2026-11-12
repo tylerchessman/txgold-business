@@ -74,14 +74,23 @@ class PaymentRequest(TypedDict):
     id: str
     status: str
     accountId: str
-    payerAccountId: str
+    #: None for an open request until it is paid (then the account that paid it), and always None
+    #: when the request named its payer by handle.
+    payerAccountId: Optional[str]
+    #: True for an open request: no payer named, payable once by anyone with its paymentUrl.
+    isOpen: bool
     amount: str
     memo: Optional[str]
     memoInternal: Optional[str]
+    #: Your own label (a till, a device, a campaign), never shown to the payer.
+    tag: Optional[str]
     createdAt: str
     expiresAt: str
     statusChangedAt: Optional[str]
     paymentId: Optional[str]
+    #: An open request's link: opens the TxGold app on the request. Share it or draw it as a QR code.
+    #: None for a request to a named payer.
+    paymentUrl: Optional[str]
 
 
 class Rate(TypedDict):

@@ -3,6 +3,21 @@
 Dated entries for the API and the SDKs. Additive changes (new fields, routes, error codes and enum
 values) can arrive at any time; anything breaking waits for a new major version.
 
+## 2026-11-11
+
+- **Open payment requests:** create a request with no payer and get a `paymentUrl` to share or
+  draw as a QR code; anyone with it can pay it, once, for exactly the stored amount. New response
+  fields `isOpen` and `paymentUrl`; `payerAccountId` is null until an open request is paid.
+- **`payerHandle`:** ask a payer by their TxGold handle instead of their account id.
+- **`tag`** on payment requests: your own label, never shown to the payer.
+- New error [`payment_request_already_paid`](/errors/payment_request_already_paid) (409).
+- Sandbox: `POST /v1/sandbox/payment-requests/{id}/pay` takes an optional `payerAccountId`, the
+  demo customer who pays an open request.
+- A new guide, [Ways to get paid](/guides/ways-to-get-paid), with five new examples in each
+  language.
+- **SDKs 0.2.0** with all of the above. The payer is now optional when creating a request;
+  existing calls work unchanged.
+
 ## 2026-11-06
 
 - **SDKs 0.1.0 (preview)** for JavaScript (`@txgold/business`), Python (`txgold-business`) and

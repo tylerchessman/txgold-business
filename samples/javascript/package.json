@@ -1,5 +1,5 @@
 {
   "private": true,
   "type": "module",
-  "dependencies": { "@txgold/business": "^0.1.0" }
+  "dependencies": { "@txgold/business": "^0.2.0", "qrcode": "^1.5.4" }
 }

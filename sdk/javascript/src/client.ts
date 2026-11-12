@@ -3,10 +3,10 @@ import { loadKeyFile, type SigningKey } from './keys.js';
 import { TimestampClock, canonicalString, signCanonical } from './signing.js';
 import type {
   Account, AccountLookup, AccountTransaction, Page, Payment, PaymentCreate, PaymentRequest,
-  PaymentRequestCreate, PaymentRequestStatus, Rate, RefundCreate, RequestOptions,
+  PaymentRequestCreate, PaymentRequestStatus, Rate, RefundCreate, RequestOptions, SandboxPayRequest,
 } from './types.js';
 
-export const VERSION = '0.1.0';
+export const VERSION = '0.2.0';
 
 /** The API's base URL per environment. Production is added when it opens. */
 export const BASE_URLS: Record<string, string> = {
@@ -167,6 +167,10 @@ export interface PaymentRequestListOptions {
 export class PaymentRequests {
   constructor(private readonly client: TxGoldClient) {}
 
+  /**
+   * Asks for a payment: from payerAccountId, from payerHandle, or (with neither) an open request
+   * that anyone with its paymentUrl can pay once. Giving both is a 400 invalid_request.
+   */
   create(request: PaymentRequestCreate, options?: RequestOptions): Promise<PaymentRequest> {
     return this.client.request('POST', '/v1/payment-requests', undefined, request, options);
   }
@@ -239,8 +243,23 @@ export class Sandbox {
     return this.client.request('POST', `/v1/sandbox/accounts/${id(accountId)}/fund`, undefined, { amount }, options);
   }
 
-  /** Has the demo customer a pending request was sent to pay it, as they would in the app. */
-  payRequest(requestId: string, options?: RequestOptions): Promise<Payment> {
-    return this.client.request('POST', `/v1/sandbox/payment-requests/${id(requestId)}/pay`, undefined, undefined, options);
+  /**
+   * Has the demo customer a pending request was sent to pay it, as they would in the app. For an
+   * open request, `pay.payerAccountId` picks which demo customer pays (default: the first one).
+   * A body is sent (and signed) only when payerAccountId is given.
+   */
+  payRequest(requestId: string, options?: RequestOptions): Promise<Payment>;
+  payRequest(requestId: string, pay: SandboxPayRequest, options?: RequestOptions): Promise<Payment>;
+  payRequest(requestId: string, payOrOptions?: SandboxPayRequest | RequestOptions, options?: RequestOptions): Promise<Payment> {
+    // 0.1 took (requestId, options): accept that shape still
+    let pay: SandboxPayRequest = {};
+    if (options === undefined && payOrOptions && isRequestOptions(payOrOptions)) options = payOrOptions;
+    else pay = (payOrOptions ?? {}) as SandboxPayRequest;
+    const body = pay.payerAccountId ? { payerAccountId: pay.payerAccountId } : undefined;
+    return this.client.request('POST', `/v1/sandbox/payment-requests/${id(requestId)}/pay`, undefined, body, options);
   }
+}
+
+function isRequestOptions(value: object): value is RequestOptions {
+  return !('payerAccountId' in value) && ('timestamp' in value || 'signal' in value);
 }

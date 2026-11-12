@@ -44,7 +44,7 @@ public sealed class TxGoldClientOptions
 public sealed class TxGoldClient : IDisposable
 {
     /// <summary>The SDK version, sent in the User-Agent.</summary>
-    public const string Version = "0.1.0";
+    public const string Version = "0.2.0";
 
     /// <summary>The API's base URL per environment. Production is added when it opens.</summary>
     public static readonly IReadOnlyDictionary<string, Uri> BaseUrls = new Dictionary<string, Uri>
