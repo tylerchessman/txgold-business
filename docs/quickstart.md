@@ -16,7 +16,7 @@ Ask TxGold for a Sandbox business through your usual contact.
 
 ## 2. Create an integration and a key
 
-1. Open the business portal and choose the **Sandbox** environment.
+1. Open the [business portal](https://business.txgold.money) and choose the **Sandbox** environment.
 2. Sign in with your owner key file.
 3. Under **Integrations**, create an integration. Its role is **Integration**, which can send,
    request, refund and see the balance.

@@ -8,7 +8,7 @@ The SDKs do all of this. Read on if you're signing in another language, or debug
 
 ## Integrations and keys
 
-An **integration** is a non-person user of your business account, created in the business portal
+An **integration** is a non-person user of your business account, created in the [business portal](https://business.txgold.money)
 by an Admin. It has:
 
 - a **role**:

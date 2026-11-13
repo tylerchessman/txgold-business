@@ -27,6 +27,7 @@ export default defineConfig({
       { text: 'API reference', link: '/reference/', target: '_self' },
       { text: 'Errors', link: '/errors/' },
       { text: 'Changelog', link: '/changelog' },
+      { text: 'Business portal', link: 'https://business.txgold.money' },
     ],
     sidebar: [
       {
