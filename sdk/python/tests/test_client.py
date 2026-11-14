@@ -124,7 +124,16 @@ def test_list_all_follows_next_cursor():
 
 def test_unknown_environment_needs_base_url():
     with pytest.raises(ValueError, match="pass base_url"):
-        TxGoldClient(KEY, environment="production")
+        TxGoldClient(KEY, environment="staging")
+
+
+@pytest.mark.parametrize("environment, url", [
+    ("sandbox", "https://api-sandbox.txgold.money"),
+    ("production", "https://api.txgold.money"),
+])
+def test_each_environment_has_its_url(environment, url):
+    with TxGoldClient(KEY, environment=environment) as client:
+        assert client.base_url == url
 
 
 def test_payment_request_to_a_payer_by_id_positional_as_before():

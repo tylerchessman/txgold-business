@@ -33,6 +33,6 @@ features:
 ---
 
 ::: warning Preview
-The API is in preview in the **Sandbox**. Production opens later. Until 1.0, SDK minor versions may
-change their interface.
+The API is open in the **Sandbox** and in **Production**. The SDKs are in preview: until 1.0, SDK
+minor versions may change their interface.
 :::

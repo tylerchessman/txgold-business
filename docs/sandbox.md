@@ -5,13 +5,14 @@ and test there, then switch to Production by changing the key file.
 
 | | Sandbox | Production |
 |---|---|---|
-| Base URL | `https://func-txgbusiness-dev-ffdea6gbbjhzczex.southcentralus-01.azurewebsites.net` | Announced when it opens |
+| Base URL | `https://api-sandbox.txgold.money` | `https://api.txgold.money` |
 | Money | Test TxGold, worth nothing | Real TxGold |
 | Customers | Demo customers that pay on request | Real people with the TxGold app |
 | Portal sign-in | Your owner key file | The TxGold app on an Admin's phone |
 | Extra routes | `/v1/sandbox/…` (below) | None |
 
-The SDKs know the Sandbox URL and pick it from the key file's `environment`.
+The SDKs know both URLs and pick one from the key file's `environment`, so a Production key
+talks to Production with no code change.
 
 ## What you get
 

@@ -4,8 +4,8 @@ Send and request [TxGold](https://txgold.money) payments from your own systems. 
 the official client libraries for **JavaScript (Node.js)**, **Python** and **C# / .NET**, runnable
 samples, the API's OpenAPI document, and the request-signing test vectors.
 
-> **Preview (0.x).** The SDKs work against the **Sandbox** today. Production opens later; until 1.0,
-> minor versions may change the API of the SDKs.
+> **Preview (0.x).** The SDKs work against the **Sandbox** and **Production**. Until 1.0, minor
+> versions may change the API of the SDKs.
 
 Documentation: **https://docs.txgold.money**
 

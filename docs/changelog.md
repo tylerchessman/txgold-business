@@ -3,6 +3,16 @@
 Dated entries for the API and the SDKs. Additive changes (new fields, routes, error codes and enum
 values) can arrive at any time; anything breaking waits for a new major version.
 
+## Production opens
+
+- **Production** at `https://api.txgold.money`, with real TxGold and real customers. Sign in to
+  the [business portal](https://business.txgold.money) with the TxGold app on an Admin's phone,
+  choose **Production**, and create an integration as you did in the Sandbox.
+- The Sandbox moves to `https://api-sandbox.txgold.money`. The old Sandbox address keeps working
+  for now, but use the new one.
+- **SDKs 0.2.0** know both URLs and choose one from the key file's `environment`.
+- The OpenAPI document lists both servers.
+
 ## 2026-11-11
 
 - **Open payment requests:** create a request with no payer and get a `paymentUrl` to share or

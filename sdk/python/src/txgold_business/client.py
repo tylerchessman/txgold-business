@@ -18,9 +18,10 @@ from .signing import TimestampClock, canonical_string, sign_canonical
 
 __version__ = "0.2.0"
 
-#: The API's base URL per environment. Production is added when it opens.
+#: The API's base URL per environment.
 BASE_URLS: Dict[str, str] = {
-    "sandbox": "https://func-txgbusiness-dev-ffdea6gbbjhzczex.southcentralus-01.azurewebsites.net",
+    "sandbox": "https://api-sandbox.txgold.money",
+    "production": "https://api.txgold.money",
 }
 
 Amount = Union[str, Decimal]

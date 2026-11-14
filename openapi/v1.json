@@ -11,8 +11,12 @@
   },
   "servers": [
     {
-      "url": "https://func-txgbusiness-dev-ffdea6gbbjhzczex.southcentralus-01.azurewebsites.net",
+      "url": "https://api-sandbox.txgold.money",
       "description": "Sandbox"
+    },
+    {
+      "url": "https://api.txgold.money",
+      "description": "Production"
     }
   ],
   "paths": {

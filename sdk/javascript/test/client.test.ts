@@ -114,7 +114,12 @@ test('listAll follows nextCursor', async () => {
 });
 
 test('an environment without a known URL needs baseUrl', () => {
-  assert.throws(() => new TxGoldClient({ key, environment: 'production' }), /pass baseUrl/);
+  assert.throws(() => new TxGoldClient({ key, environment: 'staging' }), /pass baseUrl/);
+});
+
+test('each environment has its URL', () => {
+  assert.equal(new TxGoldClient({ key, environment: 'sandbox' }).baseUrl, 'https://api-sandbox.txgold.money');
+  assert.equal(new TxGoldClient({ key, environment: 'production' }).baseUrl, 'https://api.txgold.money');
 });
 
 const bodyOf = (s: Sent) => (s.body.length ? JSON.parse(Buffer.from(s.body).toString('utf8')) : undefined);
