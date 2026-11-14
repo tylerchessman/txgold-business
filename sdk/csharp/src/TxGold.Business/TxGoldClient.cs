@@ -46,10 +46,11 @@ public sealed class TxGoldClient : IDisposable
     /// <summary>The SDK version, sent in the User-Agent.</summary>
     public const string Version = "0.2.0";
 
-    /// <summary>The API's base URL per environment. Production is added when it opens.</summary>
+    /// <summary>The API's base URL per environment.</summary>
     public static readonly IReadOnlyDictionary<string, Uri> BaseUrls = new Dictionary<string, Uri>
     {
-        ["sandbox"] = new("https://func-txgbusiness-dev-ffdea6gbbjhzczex.southcentralus-01.azurewebsites.net"),
+        ["sandbox"] = new("https://api-sandbox.txgold.money"),
+        ["production"] = new("https://api.txgold.money"),
     };
 
     internal static readonly JsonSerializerOptions Json = new()

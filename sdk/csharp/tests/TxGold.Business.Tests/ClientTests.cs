@@ -243,7 +243,16 @@ public class ClientTests
     [Fact]
     public void An_environment_without_a_known_URL_needs_BaseUrl()
     {
-        var error = Assert.Throws<ArgumentException>(() => new TxGoldClient(new TxGoldClientOptions { Key = Key, Environment = "production" }));
+        var error = Assert.Throws<ArgumentException>(() => new TxGoldClient(new TxGoldClientOptions { Key = Key, Environment = "staging" }));
         Assert.Contains("set BaseUrl", error.Message);
+    }
+
+    [Theory]
+    [InlineData("sandbox", "api-sandbox.txgold.money")]
+    [InlineData("production", "api.txgold.money")]
+    public void Each_environment_has_its_URL(string environment, string host)
+    {
+        using var client = new TxGoldClient(new TxGoldClientOptions { Key = Key, Environment = environment });
+        Assert.Equal(("https", host), (client.BaseUrl.Scheme, client.BaseUrl.Host));
     }
 }
