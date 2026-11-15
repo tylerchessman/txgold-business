@@ -1,0 +1,16 @@
+{
+  "name": "txgold-demo-site-api",
+  "private": true,
+  "description": "The demo site's server side: holds the Sandbox key and calls the TxGold Business API.",
+  "type": "module",
+  "main": "src/functions/*.js",
+  "scripts": {
+    "start": "func start",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.6.0",
+    "@txgold/business": "^0.2.0"
+  },
+  "engines": { "node": ">=20" }
+}

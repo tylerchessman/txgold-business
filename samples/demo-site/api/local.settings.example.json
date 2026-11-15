@@ -1,0 +1,10 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "TXGOLD_KEY_FILE": "C:\path\to\txgold-sandbox-demo.key.json",
+    "TXGOLD_ACCOUNT_ID": "1000010",
+    "DEMO_CUSTOMERS": "1000011:TxGDemo-Customer1,1000012:TxGDemo-Customer2,1000013:TxGDemo-Customer3",
+    "DEMO_SESSION_SECRET": "at-least-32-random-characters-here"
+  }
+}
