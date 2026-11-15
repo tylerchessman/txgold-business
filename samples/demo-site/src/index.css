@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Poppins, self-hosted, the same four faces as the TxGold app. */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./assets/fonts/poppins-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./assets/fonts/poppins-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('./assets/fonts/poppins-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./assets/fonts/poppins-700.woff2') format('woff2');
+}
+
+/*
+ * Colour tokens, copied from the wallet app (C:\txg apps/web/src/index.css): navy #1E1E35 and
+ * gold #D1A329. Light theme only for now; the names allow a dark theme later without touching
+ * components.
+ */
+@layer base {
+  :root {
+    --ground: 244 244 246;
+    --surface: 255 255 255;
+    --sunken: 239 239 244;
+    --line: 228 228 235;
+
+    --ink: 30 30 53;
+    --ink-soft: 85 85 107;
+    --ink-faint: 138 138 160;
+
+    --brand: 30 30 53;
+    --brand-ink: 255 255 255;
+
+    --gold: 209 163 41;
+    --gold-light: 222 188 96;
+    --gold-deep: 187 146 38;
+
+    --negative: 176 38 42;
+    --positive: 21 112 84;
+    --warning: 138 92 18;
+    --warning-ground: 252 246 233;
+
+    color-scheme: light;
+  }
+
+  html,
+  body {
+    @apply bg-ground font-sans text-ink antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--gold-deep));
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .field {
+    @apply w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-ink-soft focus:outline-none;
+  }
+}

@@ -35,3 +35,9 @@ customer stands in for the person paying.
 These use SDK 0.2.0. Until it's published, install the SDK from this repository: see the
 comments at the top of `javascript/README.md` and `python/requirements.txt`. The C# samples
 reference the SDK project directly.
+
+## The demo site
+
+[`demo-site/`](demo-site) is the site at [demo.txgold.money](https://demo.txgold.money): all six
+ways, live against the Sandbox, with a simulated customer phone and each API call shown as it
+happens. It shows how to keep the key on a server while a web page drives the payment.

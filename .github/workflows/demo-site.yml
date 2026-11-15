@@ -1,0 +1,84 @@
+name: Demo site
+
+# Tests and builds samples/demo-site, and deploys it to the Static Web App that serves
+# demo.txgold.money: the page (dist) with its API (api/, Node Functions that hold the Sandbox key).
+# Pull requests test and build only.
+# Secret: AZURE_STATIC_WEB_APPS_API_TOKEN_DEMO, the Static Web App's deployment token. Until it is
+# set, the deploy job is skipped.
+# The API's settings (TXGOLD_KEY, TXGOLD_ACCOUNT_ID, DEMO_CUSTOMERS, DEMO_SESSION_SECRET) are the
+# Static Web App's application settings, set in Azure, never here.
+
+on:
+  push:
+    branches: [main]
+    paths: ['samples/demo-site/**', 'samples/javascript/*.mjs', 'sdk/javascript/**', '.github/workflows/demo-site.yml']
+  pull_request:
+    paths: ['samples/demo-site/**', 'samples/javascript/*.mjs', 'sdk/javascript/**', '.github/workflows/demo-site.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # The API runs on the SDK in this repository, packed, so it deploys the SDK it was tested
+      # with (and works before @txgold/business is on npm). A real folder, not a link: it ships.
+      - name: Pack the SDK
+        working-directory: sdk/javascript
+        run: |
+          npm ci --no-audit --no-fund
+          npm pack --pack-destination "$RUNNER_TEMP"
+      - name: API - install and test
+        working-directory: samples/demo-site/api
+        run: |
+          npm install --no-save --no-audit --no-fund "$RUNNER_TEMP"/txgold-business-*.tgz
+          npm test
+
+      - name: Page - install, test and build
+        working-directory: samples/demo-site
+        run: |
+          npm ci --no-audit --no-fund
+          npm test
+          npm run build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: demo-site
+          include-hidden-files: true
+          path: |
+            samples/demo-site/dist
+            samples/demo-site/api
+
+  deploy:
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    concurrency: deploy-demo-site
+    env:
+      SWA_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_DEMO }}
+    steps:
+      - name: Deployment token set?
+        id: token
+        run: |
+          if [ -n "$SWA_TOKEN" ]; then echo "set=true" >> "$GITHUB_OUTPUT"; else echo "::notice::AZURE_STATIC_WEB_APPS_API_TOKEN_DEMO is not set: nothing deployed."; fi
+      - uses: actions/download-artifact@v4
+        if: steps.token.outputs.set == 'true'
+        with:
+          name: demo-site
+          path: site
+      - uses: Azure/static-web-apps-deploy@v1
+        if: steps.token.outputs.set == 'true'
+        with:
+          azure_static_web_apps_api_token: ${{ env.SWA_TOKEN }}
+          action: upload
+          app_location: site/dist
+          api_location: site/api
+          skip_app_build: true
+          skip_api_build: true
