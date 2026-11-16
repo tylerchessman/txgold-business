@@ -1,5 +1,9 @@
 // The page's calls to its own /api (the Function that holds the Sandbox key). Every response
 // carries `exchanges`: the Business API calls it made, for the "What just happened" panel.
+//
+// If the Sandbox (or /api) doesn't answer, the page switches to the recorded run (replay.ts) for
+// the rest of the visit, and answers the call that failed from it: the click still works.
+import type { CreateBody, Replay } from './replay';
 
 export interface Exchange {
   method: string;
@@ -10,6 +14,8 @@ export interface Exchange {
   status: number;
   responseBody: unknown;
   ms: number;
+  /** From the recorded run, not this visit. */
+  recorded?: boolean;
 }
 
 export type RequestStatus = 'pending' | 'paid' | 'dismissed' | 'cancelled' | 'expired';
@@ -103,18 +109,22 @@ async function ensureSession(): Promise<string> {
   return starting;
 }
 
+const unreachable = { ok: false as const, status: 0, error: { code: 'sandbox_unavailable', title: 'The demo could not be reached.' }, exchanges: [] };
+
 async function call<T>(method: 'GET' | 'POST', path: string, body?: unknown, retried = false): Promise<Result<T>> {
-  const token = await ensureSession();
   let response: Response;
   try {
+    const token = await ensureSession();
     response = await fetch(`/api${path}`, {
       method,
       headers: { 'X-Demo-Session': token, ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
-    return { ok: false, status: 0, error: { code: 'sandbox_unavailable', title: 'The demo could not be reached.' }, exchanges: [] };
+    return unreachable;
   }
+  // The Function itself failing (or SWA's gateway) counts as the Sandbox not answering
+  if (response.status >= 500 && response.status !== 503) return { ...unreachable, status: response.status };
   const json = (await response.json().catch(() => ({}))) as Record<string, unknown>;
   const exchanges = (json.exchanges as Exchange[] | undefined) ?? [];
   if (response.status === 401 && !retried) {
@@ -134,33 +144,79 @@ async function call<T>(method: 'GET' | 'POST', path: string, body?: unknown, ret
   return { ok: true, status: response.status, exchanges, ...(json as T) };
 }
 
-let configPromise: Promise<DemoConfig | null> | null = null;
+// Live, or the recorded run. It changes once, from live to recorded, and only a reload goes back.
+export type DemoMode = 'live' | 'recorded';
+let mode: DemoMode = 'live';
+const listeners = new Set<() => void>();
+export const demoMode = () => mode;
+export function onDemoModeChange(listener: () => void) {
+  listeners.add(listener);
+  return () => void listeners.delete(listener);
+}
+
+let replayPromise: Promise<Replay> | null = null;
+/** The recorded run, loaded only when it's needed. */
+export function replay(): Promise<Replay> {
+  replayPromise ??= Promise.all([import('./replay'), import('../recorded/run.json')]).then(
+    ([{ Replay }, run]) => new Replay(run.default as never),
+  );
+  return replayPromise;
+}
+
+async function toRecorded() {
+  const r = await replay();
+  for (const request of seen.values()) r.adopt(request);
+  if (mode !== 'recorded') {
+    mode = 'recorded';
+    listeners.forEach((l) => l());
+  }
+  return r;
+}
+
+/** Requests this page has seen live, for the recorded run to carry on with. */
+const seen = new Map<string, PaymentRequest>();
+
+/** A live call, or the recorded run's answer if the Sandbox doesn't answer (now or before). */
+async function either<T>(live: () => Promise<Result<T>>, recorded: (r: Replay) => Result<T>): Promise<Result<T>> {
+  if (mode === 'live') {
+    const result = await live();
+    if (result.ok || result.error.code !== 'sandbox_unavailable') {
+      const request = result.ok ? (result as { request?: PaymentRequest }).request : undefined;
+      if (request) seen.set(request.id, request);
+      return result;
+    }
+  }
+  return recorded(await toRecorded());
+}
+
+let configPromise: Promise<DemoConfig> | null = null;
 
 export const api = {
-  config(): Promise<DemoConfig | null> {
+  /** The demo's business and customers; from the recorded run if /api doesn't answer. */
+  config(): Promise<DemoConfig> {
     configPromise ??= fetch('/api/config')
       .then((r) => (r.ok ? (r.json() as Promise<DemoConfig>) : null))
       .catch(() => null)
-      .then((c) => {
-        if (!c) configPromise = null;
-        return c;
-      });
+      .then(async (c) => c ?? (await toRecorded()).config());
     return configPromise;
   },
-  createRequest(body: { method: DemoMethod; amount: string; memo?: string; customer?: number; handle?: string }) {
-    return call<{ request: PaymentRequest }>('POST', '/requests', body);
+  createRequest(body: CreateBody) {
+    return either(() => call<{ request: PaymentRequest }>('POST', '/requests', body), (r) => r.createRequest(body));
   },
   getRequest(id: string) {
-    return call<{ request: PaymentRequest }>('GET', `/requests/${encodeURIComponent(id)}`);
+    return either(() => call<{ request: PaymentRequest }>('GET', `/requests/${encodeURIComponent(id)}`), (r) => r.getRequest(id));
   },
   pay(id: string, customer?: number) {
-    return call<{ request: PaymentRequest; payment: Payment }>('POST', `/requests/${encodeURIComponent(id)}/pay`, { customer });
+    return either(
+      () => call<{ request: PaymentRequest; payment: Payment }>('POST', `/requests/${encodeURIComponent(id)}/pay`, { customer }),
+      (r) => r.pay(id, customer),
+    );
   },
   cancel(id: string) {
-    return call<{ request: PaymentRequest }>('POST', `/requests/${encodeURIComponent(id)}/cancel`, {});
+    return either(() => call<{ request: PaymentRequest }>('POST', `/requests/${encodeURIComponent(id)}/cancel`, {}), (r) => r.cancel(id));
   },
   transactions() {
-    return call<{ transactions: Transaction[] }>('GET', '/transactions');
+    return either(() => call<{ transactions: Transaction[] }>('GET', '/transactions'), (r) => r.transactions());
   },
 };
 

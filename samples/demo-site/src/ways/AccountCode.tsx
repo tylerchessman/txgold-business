@@ -6,7 +6,7 @@ import { Phone } from '@/components/Phone';
 import { QrCode } from '@/components/QrCode';
 import { WayShell } from '@/components/WayShell';
 import { api, type Transaction } from '@/lib/api';
-import { businessName, useConfig } from '@/lib/useConfig';
+import { businessName, useConfig, useDemoMode } from '@/lib/useConfig';
 import { useLog } from '@/lib/useDemoRequest';
 import type { StepName, Way } from '@/lib/steps';
 
@@ -17,7 +17,8 @@ import type { StepName, Way } from '@/lib/steps';
  * a real call.
  */
 export function AccountCode({ way, withAmount }: { way: Way; withAmount: boolean }) {
-  const { config, failed } = useConfig();
+  const { config } = useConfig();
+  const recorded = useDemoMode() === 'recorded';
   const [entries, log] = useLog();
   const [suggested, setSuggested] = useState('2.50');
   const [memo, setMemo] = useState('Iced latte');
@@ -27,7 +28,6 @@ export function AccountCode({ way, withAmount }: { way: Way; withAmount: boolean
   const [paid, setPaid] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<Transaction[] | null>(null);
   const [checking, setChecking] = useState(false);
-  const [unavailable, setUnavailable] = useState(false);
   const shop = businessName(config);
   const handle = config?.business.accountName ?? 'your-handle';
 
@@ -58,7 +58,6 @@ export function AccountCode({ way, withAmount }: { way: Way; withAmount: boolean
     const result = await api.transactions();
     log.addExchanges("Check what you've been paid", result.exchanges);
     setChecking(false);
-    setUnavailable(!result.ok && result.error.code === 'sandbox_unavailable');
     if (result.ok) setTransactions(result.transactions);
   }
 
@@ -94,7 +93,6 @@ export function AccountCode({ way, withAmount }: { way: Way; withAmount: boolean
       step={step}
       entries={entries}
       onRestart={restart}
-      unavailable={failed || unavailable}
       businessTitle={withAmount ? `${shop} menu` : `${shop} counter`}
       business={
         <div className="space-y-4">
@@ -140,7 +138,10 @@ export function AccountCode({ way, withAmount }: { way: Way; withAmount: boolean
               )}
               {transactions && (
                 <p className="text-xs text-ink-soft">
-                  The demo account's latest real Sandbox transactions, from every visitor. The payment you just made was shown, not made, so it isn't among them.
+                  {recorded
+                    ? "The demo account's transactions from the recorded run."
+                    : "The demo account's latest real Sandbox transactions, from every visitor."}{' '}
+                  The payment you just made was shown, not made, so it isn't among them.
                 </p>
               )}
             </div>

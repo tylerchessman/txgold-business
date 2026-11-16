@@ -9,7 +9,7 @@ import { PhoneRequest } from '@/components/PhoneScreens';
 import { QrCode } from '@/components/QrCode';
 import { WayShell } from '@/components/WayShell';
 import { phoneLink } from '@/lib/api';
-import { businessName, useConfig } from '@/lib/useConfig';
+import { businessName, useConfig, useDemoMode } from '@/lib/useConfig';
 import { useDemoRequest, useLog } from '@/lib/useDemoRequest';
 import type { StepName, Way } from '@/lib/steps';
 
@@ -20,7 +20,8 @@ const PRESETS = ['1.80', '2.95', '4.50'];
 
 /** 6. An open request: a fresh QR per sale on a till, or a link on an invoice. */
 export function OpenRequest({ way }: { way: Way }) {
-  const { config, failed } = useConfig();
+  const { config } = useConfig();
+  const recorded = useDemoMode() === 'recorded';
   const [entries, log] = useLog();
   const [mode, setMode] = useState<Mode>('till');
   const till = useDemoRequest(log, {
@@ -85,7 +86,12 @@ export function OpenRequest({ way }: { way: Way }) {
     <div className="flex flex-col items-center gap-2">
       <QrCode value={phoneLink(request.id)} size={180} label="QR code that opens this payment request" />
       <p className="max-w-[16rem] text-center text-xs text-ink-soft">
-        Scan with your own phone's camera to pay on it. In production this QR holds the request's <code>paymentUrl</code>, which
+        {recorded ? (
+          <>In a recorded run, pay with the phone here: a real phone needs the live Sandbox.</>
+        ) : (
+          <>Scan with your own phone's camera to pay on it.</>
+        )}{' '}
+        In production this QR holds the request's <code>paymentUrl</code>, which
         opens the real TxGold app.
       </p>
     </div>
@@ -98,7 +104,6 @@ export function OpenRequest({ way }: { way: Way }) {
       step={step}
       entries={entries}
       onRestart={restart}
-      unavailable={failed || flow.error?.code === 'sandbox_unavailable'}
       businessTitle={mode === 'till' ? `${shop} till` : `${shop} invoice`}
       business={
         <div className="space-y-4">

@@ -19,7 +19,7 @@ const WAIT_MS = 2 * 60_000;
 
 /** 4. Checkout on your website: a request to the handle the customer types, polled until paid. */
 export function WebsiteCheckout({ way }: { way: Way }) {
-  const { config, failed } = useConfig();
+  const { config } = useConfig();
   const [entries, log] = useLog();
   const flow = useDemoRequest(log, {
     timeoutMs: WAIT_MS,
@@ -73,7 +73,6 @@ export function WebsiteCheckout({ way }: { way: Way }) {
       step={step}
       entries={entries}
       onRestart={restart}
-      unavailable={failed || flow.error?.code === 'sandbox_unavailable'}
       businessTitle={`${shop} web shop`}
       business={
         !product ? (

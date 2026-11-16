@@ -58,6 +58,11 @@ function ExchangeItem({ entry, open: initiallyOpen }: { entry: Extract<LogEntry,
             <span className="font-semibold">{exchange.method}</span> {exchange.path}
           </span>
         </span>
+        {exchange.recorded && (
+          <span className="rounded bg-warning-ground px-1.5 py-0.5 font-medium text-warning" title="From the recorded run, not this visit">
+            recorded
+          </span>
+        )}
         <span className={clsx('rounded px-1.5 py-0.5 font-mono font-semibold', ok ? 'bg-positive/10 text-positive' : 'bg-negative/10 text-negative')}>
           {exchange.status}
         </span>
