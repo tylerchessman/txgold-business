@@ -10,6 +10,8 @@ and a small server that does.
 | `src/` | The page: Vite, React, Tailwind. The business on the left, a simulated TxGold phone in the middle, and on the right each Business API call of the run and the sample code behind the current step |
 | `api/` | The server: Azure Functions (Node) using `@txgold/business`. It holds the Sandbox key, signs every call, and records each exchange for the page |
 | `public/staticwebapp.config.json` | Static Web Apps routing and security headers |
+| `src/recorded/run.json` | A recorded run, replayed when the Sandbox doesn't answer |
+| `scripts/record.mjs` | Makes `run.json` from a real run |
 
 The code panels show the JavaScript samples in `../javascript` themselves, so the demo shows the
 code you would copy.
@@ -48,6 +50,28 @@ acts only on requests carrying the caller's tag. Rate limits apply per IP and pe
 | `GET /api/transactions` | The demo business's latest transactions |
 
 Every response carries `exchanges`: the Business API calls it made, with the signature shortened.
+
+## When the Sandbox is down
+
+If a call fails because the Sandbox (or `api/`) doesn't answer, the page switches to a recorded
+run for the rest of the visit, and answers that call from it, so the click still works:
+
+- `src/lib/replay.ts` plays the API's part from `src/recorded/run.json`, with this visit's ids,
+  amounts, memos, payers and times filled in.
+- A banner says it's a recorded run, and each call in "What just happened" is marked `recorded`.
+- A request made before the switch carries on in the recording.
+- A real phone can't pay a recorded request: the page says to use the phone on the page.
+- "Try live again" reloads the page, which starts live.
+
+To record a new run, from a site that's working (it makes and pays real Sandbox requests):
+
+```sh
+npm run record -- https://demo.txgold.money/api
+```
+
+Against a local host, add `--origin https://api-sandbox.txgold.money`, so the recording shows the
+Sandbox's address. Check the result before committing it: it holds account ids, handles and
+memos, and the shortened signatures.
 
 ## Run it yourself
 

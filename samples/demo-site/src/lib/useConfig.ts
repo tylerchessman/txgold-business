@@ -1,22 +1,24 @@
-import { useEffect, useState } from 'react';
-import { api, type DemoConfig } from './api';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import { api, demoMode, onDemoModeChange, type DemoConfig } from './api';
 
-/** The demo's business and customers, from /api/config. Null while loading or if unreachable. */
+/** The demo's business and customers, from /api/config (or the recorded run). Null while loading. */
 export function useConfig() {
   const [config, setConfig] = useState<DemoConfig | null>(null);
-  const [failed, setFailed] = useState(false);
   useEffect(() => {
     let live = true;
     void api.config().then((c) => {
-      if (!live) return;
-      setConfig(c);
-      setFailed(c === null);
+      if (live) setConfig(c);
     });
     return () => {
       live = false;
     };
   }, []);
-  return { config, failed };
+  return { config };
+}
+
+/** "live", or "recorded" once the Sandbox has failed to answer. */
+export function useDemoMode() {
+  return useSyncExternalStore(onDemoModeChange, demoMode);
 }
 
 export const businessName = (config: DemoConfig | null) =>

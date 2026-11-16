@@ -15,7 +15,7 @@ function getHandlers() {
       key: config.key,
       environment: 'sandbox',
       baseUrl: config.baseUrl,
-      timeoutMs: 15_000,
+      timeoutMs: 8_000, // past this, the page falls back to the recorded run
       fetch: recordingFetch(),
     });
     handlers = createHandlers({ client, config, limiter: new RateLimiter() });

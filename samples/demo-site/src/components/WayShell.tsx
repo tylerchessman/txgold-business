@@ -1,7 +1,8 @@
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
-import { ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
+import { ArrowLeft, ArrowRight, History, RotateCcw } from 'lucide-react';
+import { useDemoMode } from '@/lib/useConfig';
 import { GUIDE_URL, WAYS, type StepName, type Way } from '@/lib/steps';
 import type { LogEntry } from '@/lib/useDemoRequest';
 import { CodePanel } from './CodePanel';
@@ -21,7 +22,6 @@ export function WayShell({
   entries,
   step,
   onRestart,
-  unavailable,
 }: {
   way: Way;
   now: ReactNode;
@@ -31,9 +31,9 @@ export function WayShell({
   entries: LogEntry[];
   step: StepName;
   onRestart?: () => void;
-  unavailable?: boolean;
 }) {
   const [tab, setTab] = useState<'wire' | 'code'>('wire');
+  const recorded = useDemoMode() === 'recorded';
   const next = WAYS.find((w) => w.number === way.number + 1);
 
   return (
@@ -66,11 +66,7 @@ export function WayShell({
         {now}
       </div>
 
-      {unavailable && (
-        <div className="rounded-lg border border-negative/30 bg-surface px-4 py-3 text-sm text-negative">
-          The Sandbox isn't answering right now, so this step can't run live. Try again in a minute.
-        </div>
-      )}
+      {recorded && <RecordedBanner />}
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px_minmax(0,1.1fr)]">
         <Panel title={businessTitle} subtitle="The business">
@@ -102,6 +98,22 @@ export function WayShell({
           <div className={clsx('h-[540px]', tab === 'wire' ? 'overflow-auto' : 'overflow-hidden')}>{tab === 'wire' ? <WirePanel entries={entries} /> : <CodePanel step={step} />}</div>
         </Panel>
       </div>
+    </div>
+  );
+}
+
+/** The Sandbox didn't answer: from here on the page replays a recorded run (decision D42). */
+function RecordedBanner() {
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-line bg-surface px-4 py-3 text-sm" role="status" data-testid="recorded-banner">
+      <History className="h-4 w-4 shrink-0 text-gold-deep" />
+      <span className="min-w-0 flex-1">
+        <strong>Recorded run.</strong> The Sandbox isn't answering, so the demo is replaying API calls recorded from a real
+        run, with your amounts and memos filled in. Nothing here reaches the Sandbox.
+      </span>
+      <button className="text-sm font-medium underline hover:text-ink" onClick={() => location.reload()}>
+        Try live again
+      </button>
     </div>
   );
 }

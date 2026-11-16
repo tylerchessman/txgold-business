@@ -1,0 +1,887 @@
+{
+  "recordedAt": "2026-11-15T23:58:26.895Z",
+  "config": {
+    "business": {
+      "accountId": "1000013",
+      "accountName": "TxGDemo",
+      "displayName": "Demo Coffee Co"
+    },
+    "customers": [
+      {
+        "index": 0,
+        "handle": "TxGDemo-Customer1"
+      },
+      {
+        "index": 1,
+        "handle": "TxGDemo-Customer2"
+      },
+      {
+        "index": 2,
+        "handle": "TxGDemo-Customer3"
+      }
+    ],
+    "maxAmount": "5.00",
+    "methods": {
+      "app-request": {
+        "minutes": 15
+      },
+      "web-checkout": {
+        "minutes": 15
+      },
+      "in-app": {
+        "minutes": 10
+      },
+      "till": {
+        "minutes": 15
+      },
+      "invoice": {
+        "minutes": 15
+      }
+    }
+  },
+  "customerAccounts": [
+    "1000015",
+    "1000016",
+    "1000017"
+  ],
+  "responses": {
+    "create": {
+      "app-request": {
+        "request": {
+          "id": "20",
+          "status": "pending",
+          "accountId": "1000013",
+          "payerAccountId": "1000015",
+          "isOpen": false,
+          "amount": "3.50",
+          "memo": "Catering, Friday meeting",
+          "memoInternal": "demo app-request",
+          "createdAt": "2026-11-15T23:58:26.280Z",
+          "expiresAt": "2026-11-16T00:13:26.224Z",
+          "statusChangedAt": null,
+          "paymentId": null,
+          "tag": "demo-345c4e0461a17a03",
+          "paymentUrl": null
+        },
+        "exchanges": [
+          {
+            "method": "POST",
+            "path": "/v1/payment-requests",
+            "origin": "https://api-sandbox.txgold.money",
+            "requestHeaders": {
+              "TxG-Key-Id": "MFkwEwYHKoZIzj0C…",
+              "TxG-Timestamp": "639303839062254924",
+              "TxG-Signature": "M757sUfT1ZJq…",
+              "Accept": "application/json",
+              "User-Agent": "txgold-business-js/0.2.0",
+              "Content-Type": "application/json"
+            },
+            "requestBody": {
+              "accountId": "1000013",
+              "payerAccountId": "1000015",
+              "amount": "3.50",
+              "memo": "Catering, Friday meeting",
+              "memoInternal": "demo app-request",
+              "tag": "demo-345c4e0461a17a03",
+              "expiresAt": "2026-11-16T00:13:26.224Z"
+            },
+            "status": 201,
+            "responseBody": {
+              "id": "20",
+              "status": "pending",
+              "accountId": "1000013",
+              "payerAccountId": "1000015",
+              "isOpen": false,
+              "amount": "3.50",
+              "memo": "Catering, Friday meeting",
+              "memoInternal": "demo app-request",
+              "createdAt": "2026-11-15T23:58:26.280Z",
+              "expiresAt": "2026-11-16T00:13:26.224Z",
+              "statusChangedAt": null,
+              "paymentId": null,
+              "tag": "demo-345c4e0461a17a03",
+              "paymentUrl": null
+            },
+            "ms": 66
+          }
+        ]
+      },
+      "web-checkout": {
+        "request": {
+          "id": "23",
+          "status": "pending",
+          "accountId": "1000013",
+          "payerAccountId": null,
+          "isOpen": false,
+          "amount": "4.20",
+          "memo": "Order 1042: beans, 250 g",
+          "memoInternal": "demo web-checkout",
+          "createdAt": "2026-11-15T23:58:26.607Z",
+          "expiresAt": "2026-11-16T00:13:26.602Z",
+          "statusChangedAt": null,
+          "paymentId": null,
+          "tag": "demo-345c4e0461a17a03",
+          "paymentUrl": null
+        },
+        "exchanges": [
+          {
+            "method": "POST",
+            "path": "/v1/payment-requests",
+            "origin": "https://api-sandbox.txgold.money",
+            "requestHeaders": {
+              "TxG-Key-Id": "MFkwEwYHKoZIzj0C…",
+              "TxG-Timestamp": "639303839066026344",
+              "TxG-Signature": "8aGCQfhJs7QF…",
+              "Accept": "application/json",
+              "User-Agent": "txgold-business-js/0.2.0",
+              "Content-Type": "application/json"
+            },
+            "requestBody": {
+              "accountId": "1000013",
+              "payerHandle": "TxGDemo-Customer1",
+              "amount": "4.20",
+              "memo": "Order 1042: beans, 250 g",
+              "memoInternal": "demo web-checkout",
+              "tag": "demo-345c4e0461a17a03",
+              "expiresAt": "2026-11-16T00:13:26.602Z"
+            },
+            "status": 201,
+            "responseBody": {
+              "id": "23",
+              "status": "pending",
+              "accountId": "1000013",
+              "payerAccountId": null,
+              "isOpen": false,
+              "amount": "4.20",
+              "memo": "Order 1042: beans, 250 g",
+              "memoInternal": "demo web-checkout",
+              "createdAt": "2026-11-15T23:58:26.607Z",
+              "expiresAt": "2026-11-16T00:13:26.602Z",
+              "statusChangedAt": null,
+              "paymentId": null,
+              "tag": "demo-345c4e0461a17a03",
+              "paymentUrl": null
+            },
+            "ms": 7
+          }
+        ]
+      },
+      "in-app": {
+        "request": {
+          "id": "24",
+          "status": "pending",
+          "accountId": "1000013",
+          "payerAccountId": null,
+          "isOpen": true,
+          "amount": "0.75",
+          "memo": "Flat white",
+          "memoInternal": "demo in-app",
+          "createdAt": "2026-11-15T23:58:26.635Z",
+          "expiresAt": "2026-11-16T00:08:26.629Z",
+          "statusChangedAt": null,
+          "paymentId": null,
+          "tag": "demo-345c4e0461a17a03",
+          "paymentUrl": "https://app.txgold.money/RequestPayment?AccountId=1000013&AccountName=TxGDemo&Amt=0.75&Memo=Flat%20white&Request=639303839066295449"
+        },
+        "exchanges": [
+          {
+            "method": "POST",
+            "path": "/v1/payment-requests",
+            "origin": "https://api-sandbox.txgold.money",
+            "requestHeaders": {
+              "TxG-Key-Id": "MFkwEwYHKoZIzj0C…",
+              "TxG-Timestamp": "639303839066295449",
+              "TxG-Signature": "pjLSeKz+auXJ…",
+              "Accept": "application/json",
+              "User-Agent": "txgold-business-js/0.2.0",
+              "Content-Type": "application/json"
+            },
+            "requestBody": {
+              "accountId": "1000013",
+              "amount": "0.75",
+              "memo": "Flat white",
+              "memoInternal": "demo in-app",
+              "tag": "demo-345c4e0461a17a03",
+              "expiresAt": "2026-11-16T00:08:26.629Z"
+            },
+            "status": 201,
+            "responseBody": {
+              "id": "24",
+              "status": "pending",
+              "accountId": "1000013",
+              "payerAccountId": null,
+              "isOpen": true,
+              "amount": "0.75",
+              "memo": "Flat white",
+              "memoInternal": "demo in-app",
+              "createdAt": "2026-11-15T23:58:26.635Z",
+              "expiresAt": "2026-11-16T00:08:26.629Z",
+              "statusChangedAt": null,
+              "paymentId": null,
+              "tag": "demo-345c4e0461a17a03",
+              "paymentUrl": "https://app.txgold.money/RequestPayment?AccountId=1000013&AccountName=TxGDemo&Amt=0.75&Memo=Flat%20white&Request=639303839066295449"
+            },
+            "ms": 8
+          }
+        ]
+      },
+      "till": {
+        "request": {
+          "id": "25",
+          "status": "pending",
+          "accountId": "1000013",
+          "payerAccountId": null,
+          "isOpen": true,
+          "amount": "2.80",
+          "memo": "Till 1: cappuccino",
+          "memoInternal": "demo till",
+          "createdAt": "2026-11-15T23:58:26.817Z",
+          "expiresAt": "2026-11-16T00:13:26.813Z",
+          "statusChangedAt": null,
+          "paymentId": null,
+          "tag": "demo-345c4e0461a17a03",
+          "paymentUrl": "https://app.txgold.money/RequestPayment?AccountId=1000013&AccountName=TxGDemo&Amt=2.80&Memo=Till%201%3A%20cappuccino&Request=639303839068135187"
+        },
+        "exchanges": [
+          {
+            "method": "POST",
+            "path": "/v1/payment-requests",
+            "origin": "https://api-sandbox.txgold.money",
+            "requestHeaders": {
+              "TxG-Key-Id": "MFkwEwYHKoZIzj0C…",
+              "TxG-Timestamp": "639303839068135187",
+              "TxG-Signature": "XMm0+afkzqvr…",
+              "Accept": "application/json",
+              "User-Agent": "txgold-business-js/0.2.0",
+              "Content-Type": "application/json"
+            },
+            "requestBody": {
+              "accountId": "1000013",
+              "amount": "2.80",
+              "memo": "Till 1: cappuccino",
+              "memoInternal": "demo till",
+              "tag": "demo-345c4e0461a17a03",
+              "expiresAt": "2026-11-16T00:13:26.813Z"
+            },
+            "status": 201,
+            "responseBody": {
+              "id": "25",
+              "status": "pending",
+              "accountId": "1000013",
+              "payerAccountId": null,
+              "isOpen": true,
+              "amount": "2.80",
+              "memo": "Till 1: cappuccino",
+              "memoInternal": "demo till",
+              "createdAt": "2026-11-15T23:58:26.817Z",
+              "expiresAt": "2026-11-16T00:13:26.813Z",
+              "statusChangedAt": null,
+              "paymentId": null,
+              "tag": "demo-345c4e0461a17a03",
+              "paymentUrl": "https://app.txgold.money/RequestPayment?AccountId=1000013&AccountName=TxGDemo&Amt=2.80&Memo=Till%201%3A%20cappuccino&Request=639303839068135187"
+            },
+            "ms": 6
+          }
+        ]
+      },
+      "invoice": {
+        "request": {
+          "id": "26",
+          "status": "pending",
+          "accountId": "1000013",
+          "payerAccountId": null,
+          "isOpen": true,
+          "amount": "4.50",
+          "memo": "Invoice 2026-118",
+          "memoInternal": "demo invoice",
+          "createdAt": "2026-11-15T23:58:26.838Z",
+          "expiresAt": "2026-11-16T00:13:26.834Z",
+          "statusChangedAt": null,
+          "paymentId": null,
+          "tag": "demo-345c4e0461a17a03",
+          "paymentUrl": "https://app.txgold.money/RequestPayment?AccountId=1000013&AccountName=TxGDemo&Amt=4.50&Memo=Invoice%202026-118&Request=639303839068359454"
+        },
+        "exchanges": [
+          {
+            "method": "POST",
+            "path": "/v1/payment-requests",
+            "origin": "https://api-sandbox.txgold.money",
+            "requestHeaders": {
+              "TxG-Key-Id": "MFkwEwYHKoZIzj0C…",
+              "TxG-Timestamp": "639303839068359454",
+              "TxG-Signature": "Q3fhEEdpEyKg…",
+              "Accept": "application/json",
+              "User-Agent": "txgold-business-js/0.2.0",
+              "Content-Type": "application/json"
+            },
+            "requestBody": {
+              "accountId": "1000013",
+              "amount": "4.50",
+              "memo": "Invoice 2026-118",
+              "memoInternal": "demo invoice",
+              "tag": "demo-345c4e0461a17a03",
+              "expiresAt": "2026-11-16T00:13:26.834Z"
+            },
+            "status": 201,
+            "responseBody": {
+              "id": "26",
+              "status": "pending",
+              "accountId": "1000013",
+              "payerAccountId": null,
+              "isOpen": true,
+              "amount": "4.50",
+              "memo": "Invoice 2026-118",
+              "memoInternal": "demo invoice",
+              "createdAt": "2026-11-15T23:58:26.838Z",
+              "expiresAt": "2026-11-16T00:13:26.834Z",
+              "statusChangedAt": null,
+              "paymentId": null,
+              "tag": "demo-345c4e0461a17a03",
+              "paymentUrl": "https://app.txgold.money/RequestPayment?AccountId=1000013&AccountName=TxGDemo&Amt=4.50&Memo=Invoice%202026-118&Request=639303839068359454"
+            },
+            "ms": 5
+          }
+        ]
+      }
+    },
+    "get": {
+      "request": {
+        "id": "20",
+        "status": "pending",
+        "accountId": "1000013",
+        "payerAccountId": "1000015",
+        "isOpen": false,
+        "amount": "3.50",
+        "memo": "Catering, Friday meeting",
+        "memoInternal": "demo app-request",
+        "createdAt": "2026-11-15T23:58:26.280Z",
+        "expiresAt": "2026-11-16T00:13:26.224Z",
+        "statusChangedAt": null,
+        "paymentId": null,
+        "tag": "demo-345c4e0461a17a03",
+        "paymentUrl": null
+      },
+      "exchanges": [
+        {
+          "method": "GET",
+          "path": "/v1/payment-requests/20",
+          "origin": "https://api-sandbox.txgold.money",
+          "requestHeaders": {
+            "TxG-Key-Id": "MFkwEwYHKoZIzj0C…",
+            "TxG-Timestamp": "639303839063190923",
+            "TxG-Signature": "heoBxlmej5bO…",
+            "Accept": "application/json",
+            "User-Agent": "txgold-business-js/0.2.0"
+          },
+          "requestBody": null,
+          "status": 200,
+          "responseBody": {
+            "id": "20",
+            "status": "pending",
+            "accountId": "1000013",
+            "payerAccountId": "1000015",
+            "isOpen": false,
+            "amount": "3.50",
+            "memo": "Catering, Friday meeting",
+            "memoInternal": "demo app-request",
+            "createdAt": "2026-11-15T23:58:26.280Z",
+            "expiresAt": "2026-11-16T00:13:26.224Z",
+            "statusChangedAt": null,
+            "paymentId": null,
+            "tag": "demo-345c4e0461a17a03",
+            "paymentUrl": null
+          },
+          "ms": 14
+        }
+      ]
+    },
+    "pay": {
+      "directed": {
+        "payment": {
+          "id": "47",
+          "accountId": "1000015",
+          "destinationAccountId": "1000013",
+          "direction": "credit",
+          "amount": "3.50",
+          "fee": "0.03",
+          "memo": "Catering, Friday meeting",
+          "memoInternal": null,
+          "createdAt": "2026-11-15T23:58:26.541Z",
+          "paymentRequestId": "20",
+          "refundOf": null,
+          "refundId": null,
+          "refundedAmount": null,
+          "balanceAfter": null
+        },
+        "request": {
+          "id": "20",
+          "status": "paid",
+          "accountId": "1000013",
+          "payerAccountId": "1000015",
+          "isOpen": false,
+          "amount": "3.50",
+          "memo": "Catering, Friday meeting",
+          "memoInternal": "demo app-request",
+          "createdAt": "2026-11-15T23:58:26.280Z",
+          "expiresAt": "2026-11-16T00:13:26.224Z",
+          "statusChangedAt": "2026-11-15T23:58:26.541Z",
+          "paymentId": "47",
+          "tag": "demo-345c4e0461a17a03",
+          "paymentUrl": null
+        },
+        "exchanges": [
+          {
+            "method": "POST",
+            "path": "/v1/sandbox/payment-requests/20/pay",
+            "origin": "https://api-sandbox.txgold.money",
+            "requestHeaders": {
+              "TxG-Key-Id": "MFkwEwYHKoZIzj0C…",
+              "TxG-Timestamp": "639303839063423962",
+              "TxG-Signature": "D1BBOH0HFBOs…",
+              "Accept": "application/json",
+              "User-Agent": "txgold-business-js/0.2.0"
+            },
+            "requestBody": null,
+            "status": 201,
+            "responseBody": {
+              "id": "47",
+              "accountId": "1000015",
+              "destinationAccountId": "1000013",
+              "direction": "credit",
+              "amount": "3.50",
+              "fee": "0.03",
+              "memo": "Catering, Friday meeting",
+              "memoInternal": null,
+              "createdAt": "2026-11-15T23:58:26.541Z",
+              "paymentRequestId": "20",
+              "refundOf": null,
+              "refundId": null,
+              "refundedAmount": null,
+              "balanceAfter": null
+            },
+            "ms": 209
+          },
+          {
+            "method": "GET",
+            "path": "/v1/payment-requests/20",
+            "origin": "https://api-sandbox.txgold.money",
+            "requestHeaders": {
+              "TxG-Key-Id": "MFkwEwYHKoZIzj0C…",
+              "TxG-Timestamp": "639303839065517315",
+              "TxG-Signature": "yi1wdPSA/N3G…",
+              "Accept": "application/json",
+              "User-Agent": "txgold-business-js/0.2.0"
+            },
+            "requestBody": null,
+            "status": 200,
+            "responseBody": {
+              "id": "20",
+              "status": "paid",
+              "accountId": "1000013",
+              "payerAccountId": "1000015",
+              "isOpen": false,
+              "amount": "3.50",
+              "memo": "Catering, Friday meeting",
+              "memoInternal": "demo app-request",
+              "createdAt": "2026-11-15T23:58:26.280Z",
+              "expiresAt": "2026-11-16T00:13:26.224Z",
+              "statusChangedAt": "2026-11-15T23:58:26.541Z",
+              "paymentId": "47",
+              "tag": "demo-345c4e0461a17a03",
+              "paymentUrl": null
+            },
+            "ms": 6
+          }
+        ]
+      },
+      "open": {
+        "payment": {
+          "id": "50",
+          "accountId": "1000016",
+          "destinationAccountId": "1000013",
+          "direction": "credit",
+          "amount": "0.75",
+          "fee": "0.01",
+          "memo": "Flat white",
+          "memoInternal": null,
+          "createdAt": "2026-11-15T23:58:26.802Z",
+          "paymentRequestId": "24",
+          "refundOf": null,
+          "refundId": null,
+          "refundedAmount": null,
+          "balanceAfter": null
+        },
+        "request": {
+          "id": "24",
+          "status": "paid",
+          "accountId": "1000013",
+          "payerAccountId": "1000016",
+          "isOpen": true,
+          "amount": "0.75",
+          "memo": "Flat white",
+          "memoInternal": "demo in-app",
+          "createdAt": "2026-11-15T23:58:26.635Z",
+          "expiresAt": "2026-11-16T00:08:26.629Z",
+          "statusChangedAt": "2026-11-15T23:58:26.802Z",
+          "paymentId": "50",
+          "tag": "demo-345c4e0461a17a03",
+          "paymentUrl": "https://app.txgold.money/RequestPayment?AccountId=1000013&AccountName=TxGDemo&Amt=0.75&Memo=Flat%20white&Request=639303839066295449"
+        },
+        "exchanges": [
+          {
+            "method": "POST",
+            "path": "/v1/sandbox/payment-requests/24/pay",
+            "origin": "https://api-sandbox.txgold.money",
+            "requestHeaders": {
+              "TxG-Key-Id": "MFkwEwYHKoZIzj0C…",
+              "TxG-Timestamp": "639303839066500336",
+              "TxG-Signature": "VhOPsAvB9Pr0…",
+              "Accept": "application/json",
+              "User-Agent": "txgold-business-js/0.2.0",
+              "Content-Type": "application/json"
+            },
+            "requestBody": {
+              "payerAccountId": "1000016"
+            },
+            "status": 201,
+            "responseBody": {
+              "id": "50",
+              "accountId": "1000016",
+              "destinationAccountId": "1000013",
+              "direction": "credit",
+              "amount": "0.75",
+              "fee": "0.01",
+              "memo": "Flat white",
+              "memoInternal": null,
+              "createdAt": "2026-11-15T23:58:26.802Z",
+              "paymentRequestId": "24",
+              "refundOf": null,
+              "refundId": null,
+              "refundedAmount": null,
+              "balanceAfter": null
+            },
+            "ms": 156
+          },
+          {
+            "method": "GET",
+            "path": "/v1/payment-requests/24",
+            "origin": "https://api-sandbox.txgold.money",
+            "requestHeaders": {
+              "TxG-Key-Id": "MFkwEwYHKoZIzj0C…",
+              "TxG-Timestamp": "639303839068061022",
+              "TxG-Signature": "06Ai9wSlfBQb…",
+              "Accept": "application/json",
+              "User-Agent": "txgold-business-js/0.2.0"
+            },
+            "requestBody": null,
+            "status": 200,
+            "responseBody": {
+              "id": "24",
+              "status": "paid",
+              "accountId": "1000013",
+              "payerAccountId": "1000016",
+              "isOpen": true,
+              "amount": "0.75",
+              "memo": "Flat white",
+              "memoInternal": "demo in-app",
+              "createdAt": "2026-11-15T23:58:26.635Z",
+              "expiresAt": "2026-11-16T00:08:26.629Z",
+              "statusChangedAt": "2026-11-15T23:58:26.802Z",
+              "paymentId": "50",
+              "tag": "demo-345c4e0461a17a03",
+              "paymentUrl": "https://app.txgold.money/RequestPayment?AccountId=1000013&AccountName=TxGDemo&Amt=0.75&Memo=Flat%20white&Request=639303839066295449"
+            },
+            "ms": 4
+          }
+        ]
+      }
+    },
+    "cancel": {
+      "request": {
+        "id": "22",
+        "status": "cancelled",
+        "accountId": "1000013",
+        "payerAccountId": "1000017",
+        "isOpen": false,
+        "amount": "3.50",
+        "memo": "Catering, Friday meeting",
+        "memoInternal": "demo app-request",
+        "createdAt": "2026-11-15T23:58:26.311Z",
+        "expiresAt": "2026-11-16T00:13:26.307Z",
+        "statusChangedAt": "2026-11-15T23:58:26.597Z",
+        "paymentId": null,
+        "tag": "demo-345c4e0461a17a03",
+        "paymentUrl": null
+      },
+      "exchanges": [
+        {
+          "method": "POST",
+          "path": "/v1/payment-requests/22/cancel",
+          "origin": "https://api-sandbox.txgold.money",
+          "requestHeaders": {
+            "TxG-Key-Id": "MFkwEwYHKoZIzj0C…",
+            "TxG-Timestamp": "639303839065934103",
+            "TxG-Signature": "Yk5VKJgH1iER…",
+            "Accept": "application/json",
+            "User-Agent": "txgold-business-js/0.2.0"
+          },
+          "requestBody": null,
+          "status": 200,
+          "responseBody": {
+            "id": "22",
+            "status": "cancelled",
+            "accountId": "1000013",
+            "payerAccountId": "1000017",
+            "isOpen": false,
+            "amount": "3.50",
+            "memo": "Catering, Friday meeting",
+            "memoInternal": "demo app-request",
+            "createdAt": "2026-11-15T23:58:26.311Z",
+            "expiresAt": "2026-11-16T00:13:26.307Z",
+            "statusChangedAt": "2026-11-15T23:58:26.597Z",
+            "paymentId": null,
+            "tag": "demo-345c4e0461a17a03",
+            "paymentUrl": null
+          },
+          "ms": 5
+        }
+      ]
+    },
+    "transactions": {
+      "transactions": [
+        {
+          "id": "50",
+          "direction": "credit",
+          "amount": "0.75",
+          "fee": "0.01",
+          "counterparty": {
+            "accountId": "1000016",
+            "accountName": "TxGDemo-Customer2",
+            "displayName": "Demo Customer 2 (Demo Coffee Co)",
+            "type": "personal"
+          },
+          "memo": "Flat white",
+          "memoInternal": null,
+          "createdAt": "2026-11-15T23:58:26.802Z",
+          "paymentRequestId": "24",
+          "refundOf": null,
+          "refundId": null,
+          "balanceAfter": "13.29",
+          "estimatedUsdValue": "3.30",
+          "actualUsdValue": null
+        },
+        {
+          "id": "47",
+          "direction": "credit",
+          "amount": "3.50",
+          "fee": "0.03",
+          "counterparty": {
+            "accountId": "1000015",
+            "accountName": "TxGDemo-Customer1",
+            "displayName": "Demo Customer 1 (Demo Coffee Co)",
+            "type": "personal"
+          },
+          "memo": "Catering, Friday meeting",
+          "memoInternal": null,
+          "createdAt": "2026-11-15T23:58:26.541Z",
+          "paymentRequestId": "20",
+          "refundOf": null,
+          "refundId": null,
+          "balanceAfter": "12.55",
+          "estimatedUsdValue": "15.40",
+          "actualUsdValue": null
+        },
+        {
+          "id": "44",
+          "direction": "credit",
+          "amount": "0.75",
+          "fee": "0.01",
+          "counterparty": {
+            "accountId": "1000015",
+            "accountName": "TxGDemo-Customer1",
+            "displayName": "Demo Customer 1 (Demo Coffee Co)",
+            "type": "personal"
+          },
+          "memo": "Demo Coffee Co app: Flat white, pick up in 5 minutes",
+          "memoInternal": null,
+          "createdAt": "2026-11-15T15:53:29.472Z",
+          "paymentRequestId": "18",
+          "refundOf": null,
+          "refundId": null,
+          "balanceAfter": "9.08",
+          "estimatedUsdValue": "3.30",
+          "actualUsdValue": null
+        },
+        {
+          "id": "41",
+          "direction": "credit",
+          "amount": "2.95",
+          "fee": "0.02",
+          "counterparty": {
+            "accountId": "1000015",
+            "accountName": "TxGDemo-Customer1",
+            "displayName": "Demo Customer 1 (Demo Coffee Co)",
+            "type": "personal"
+          },
+          "memo": "Demo Coffee Co, counter",
+          "memoInternal": null,
+          "createdAt": "2026-11-15T15:53:04.343Z",
+          "paymentRequestId": "17",
+          "refundOf": null,
+          "refundId": null,
+          "balanceAfter": "8.34",
+          "estimatedUsdValue": "12.98",
+          "actualUsdValue": null
+        },
+        {
+          "id": "38",
+          "direction": "credit",
+          "amount": "1.25",
+          "fee": "0.01",
+          "counterparty": {
+            "accountId": "1000016",
+            "accountName": "TxGDemo-Customer2",
+            "displayName": "Demo Customer 2 (Demo Coffee Co)",
+            "type": "personal"
+          },
+          "memo": "Demo Coffee Co web shop: Ceramic mug",
+          "memoInternal": null,
+          "createdAt": "2026-11-15T15:51:42.290Z",
+          "paymentRequestId": "16",
+          "refundOf": null,
+          "refundId": null,
+          "balanceAfter": "5.41",
+          "estimatedUsdValue": "5.50",
+          "actualUsdValue": null
+        }
+      ],
+      "exchanges": [
+        {
+          "method": "GET",
+          "path": "/v1/accounts/1000013/transactions?limit=5",
+          "origin": "https://api-sandbox.txgold.money",
+          "requestHeaders": {
+            "TxG-Key-Id": "MFkwEwYHKoZIzj0C…",
+            "TxG-Timestamp": "639303839068548952",
+            "TxG-Signature": "CiUBi8UpfvVx…",
+            "Accept": "application/json",
+            "User-Agent": "txgold-business-js/0.2.0"
+          },
+          "requestBody": null,
+          "status": 200,
+          "responseBody": {
+            "data": [
+              {
+                "id": "50",
+                "direction": "credit",
+                "amount": "0.75",
+                "fee": "0.01",
+                "counterparty": {
+                  "accountId": "1000016",
+                  "accountName": "TxGDemo-Customer2",
+                  "displayName": "Demo Customer 2 (Demo Coffee Co)",
+                  "type": "personal"
+                },
+                "memo": "Flat white",
+                "memoInternal": null,
+                "createdAt": "2026-11-15T23:58:26.802Z",
+                "paymentRequestId": "24",
+                "refundOf": null,
+                "refundId": null,
+                "balanceAfter": "13.29",
+                "estimatedUsdValue": "3.30",
+                "actualUsdValue": null
+              },
+              {
+                "id": "47",
+                "direction": "credit",
+                "amount": "3.50",
+                "fee": "0.03",
+                "counterparty": {
+                  "accountId": "1000015",
+                  "accountName": "TxGDemo-Customer1",
+                  "displayName": "Demo Customer 1 (Demo Coffee Co)",
+                  "type": "personal"
+                },
+                "memo": "Catering, Friday meeting",
+                "memoInternal": null,
+                "createdAt": "2026-11-15T23:58:26.541Z",
+                "paymentRequestId": "20",
+                "refundOf": null,
+                "refundId": null,
+                "balanceAfter": "12.55",
+                "estimatedUsdValue": "15.40",
+                "actualUsdValue": null
+              },
+              {
+                "id": "44",
+                "direction": "credit",
+                "amount": "0.75",
+                "fee": "0.01",
+                "counterparty": {
+                  "accountId": "1000015",
+                  "accountName": "TxGDemo-Customer1",
+                  "displayName": "Demo Customer 1 (Demo Coffee Co)",
+                  "type": "personal"
+                },
+                "memo": "Demo Coffee Co app: Flat white, pick up in 5 minutes",
+                "memoInternal": null,
+                "createdAt": "2026-11-15T15:53:29.472Z",
+                "paymentRequestId": "18",
+                "refundOf": null,
+                "refundId": null,
+                "balanceAfter": "9.08",
+                "estimatedUsdValue": "3.30",
+                "actualUsdValue": null
+              },
+              {
+                "id": "41",
+                "direction": "credit",
+                "amount": "2.95",
+                "fee": "0.02",
+                "counterparty": {
+                  "accountId": "1000015",
+                  "accountName": "TxGDemo-Customer1",
+                  "displayName": "Demo Customer 1 (Demo Coffee Co)",
+                  "type": "personal"
+                },
+                "memo": "Demo Coffee Co, counter",
+                "memoInternal": null,
+                "createdAt": "2026-11-15T15:53:04.343Z",
+                "paymentRequestId": "17",
+                "refundOf": null,
+                "refundId": null,
+                "balanceAfter": "8.34",
+                "estimatedUsdValue": "12.98",
+                "actualUsdValue": null
+              },
+              {
+                "id": "38",
+                "direction": "credit",
+                "amount": "1.25",
+                "fee": "0.01",
+                "counterparty": {
+                  "accountId": "1000016",
+                  "accountName": "TxGDemo-Customer2",
+                  "displayName": "Demo Customer 2 (Demo Coffee Co)",
+                  "type": "personal"
+                },
+                "memo": "Demo Coffee Co web shop: Ceramic mug",
+                "memoInternal": null,
+                "createdAt": "2026-11-15T15:51:42.290Z",
+                "paymentRequestId": "16",
+                "refundOf": null,
+                "refundId": null,
+                "balanceAfter": "5.41",
+                "estimatedUsdValue": "5.50",
+                "actualUsdValue": null
+              }
+            ],
+            "nextCursor": "NjM5MzAzNTQ3MDIyOTA5MTMxLjM4"
+          },
+          "ms": 38
+        }
+      ]
+    }
+  }
+}

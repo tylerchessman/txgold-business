@@ -11,7 +11,7 @@ import type { StepName, Way } from '@/lib/steps';
 
 /** 3. A request from the app: the business asks a customer it knows, by account. */
 export function RequestFromApp({ way }: { way: Way }) {
-  const { config, failed } = useConfig();
+  const { config } = useConfig();
   const [entries, log] = useLog();
   const flow = useDemoRequest(log, {
     timeoutMs: 3 * 60_000,
@@ -64,7 +64,6 @@ export function RequestFromApp({ way }: { way: Way }) {
       step={step}
       entries={entries}
       onRestart={restart}
-      unavailable={failed || flow.error?.code === 'sandbox_unavailable'}
       businessTitle={`${shop}: request a payment`}
       business={
         !request ? (

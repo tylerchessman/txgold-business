@@ -13,7 +13,7 @@ const ITEM = { name: 'Flat white, pick up in 5 minutes', price: '0.75' };
 
 /** 5. Checkout inside your app: an open request whose paymentUrl the app opens. */
 export function AppCheckout({ way }: { way: Way }) {
-  const { config, failed } = useConfig();
+  const { config } = useConfig();
   const [entries, log] = useLog();
   const flow = useDemoRequest(log, {
     timeoutMs: 2 * 60_000,
@@ -102,7 +102,6 @@ export function AppCheckout({ way }: { way: Way }) {
       step={step}
       entries={entries}
       onRestart={restart}
-      unavailable={failed || flow.error?.code === 'sandbox_unavailable'}
       businessTitle={`${shop} app`}
       business={yourApp}
       phone={
