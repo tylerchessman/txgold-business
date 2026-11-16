@@ -12,6 +12,9 @@ values) can arrive at any time; anything breaking waits for a new major version.
   for now, but use the new one.
 - **SDKs 0.2.0** know both URLs and choose one from the key file's `environment`.
 - The OpenAPI document lists both servers.
+- **A live demo** at [demo.txgold.money](https://demo.txgold.money): the six
+  [ways to get paid](/guides/ways-to-get-paid), each from both sides, with every API call shown.
+  Its code is the new `samples/demo-site`.
 
 ## 2026-11-11
 

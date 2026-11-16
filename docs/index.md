@@ -16,6 +16,9 @@ hero:
       text: API reference
       link: /reference/
       target: _self
+    - theme: alt
+      text: Live demo
+      link: https://demo.txgold.money
 
 features:
   - title: Payments and refunds
