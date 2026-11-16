@@ -68,7 +68,7 @@ Each SDK has the same parts:
 | Rates | `rates.get` | `rates.get` | `Rates.GetAsync` |
 | Sandbox only | `sandbox.fund / payRequest` | `sandbox.fund / pay_request` | `Sandbox.FundAsync / PayRequestAsync` |
 
-The [samples](samples/) run a full tour in the Sandbox: rates, your balance, a payment, a payment
+The [samples](https://github.com/tylerchessman/txgold-business/tree/main/samples) run a full tour in the Sandbox: rates, your balance, a payment, a payment
 request that a demo customer pays, a refund, and your transactions.
 
 ## Things worth knowing
@@ -84,7 +84,7 @@ request that a demo customer pays, a refund, and your transactions.
   502/503/504, always with the same timestamp.
 - **Signing** is done for you. To sign by hand in another language, see
   [Authentication](https://docs.txgold.money/authentication) and the test vectors in
-  [`vectors/`](vectors/), which every SDK here passes.
+  [`vectors/`](https://github.com/tylerchessman/txgold-business/tree/main/vectors), which every SDK here passes.
 
 ## Repository layout
 

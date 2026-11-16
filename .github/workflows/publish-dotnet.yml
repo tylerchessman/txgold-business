@@ -1,0 +1,83 @@
+name: Publish .NET SDK
+
+# Publishes sdk/csharp to NuGet as TxGold.Business, with NuGet trusted publishing: GitHub signs a
+# short-lived token for this workflow, NuGet trades it for an API key that lasts an hour, and no
+# NuGet key is stored anywhere.
+#
+# To release: set <Version> in sdk/csharp/src/TxGold.Business/TxGold.Business.csproj, merge, then
+# push a tag: git tag dotnet-v0.2.0 && git push origin dotnet-v0.2.0
+#
+# NuGet's side (once): a trusted publishing policy for this repository, the workflow file
+# publish-dotnet.yml, and the environment nuget. NUGET_USER is the nuget.org profile that owns it.
+
+on:
+  push:
+    tags: ['dotnet-v*']
+
+permissions:
+  contents: read
+
+env:
+  NUGET_USER: tylerchessman
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sdk/csharp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: The tag matches the version
+        run: |
+          tag="${GITHUB_REF_NAME#dotnet-v}"
+          version=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' src/TxGold.Business/TxGold.Business.csproj)
+          echo "tag $tag, csproj $version"
+          if [ "$tag" != "$version" ]; then
+            echo "::error::Tag dotnet-v$tag does not match the package version ($version)."
+            exit 1
+          fi
+
+      - name: Test
+        run: dotnet test -c Release
+
+      - name: Pack
+        run: dotnet pack src/TxGold.Business/TxGold.Business.csproj -c Release -o "$GITHUB_WORKSPACE/dist" -p:ContinuousIntegrationBuild=true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: nuget
+      url: https://www.nuget.org/packages/TxGold.Business
+    permissions:
+      id-token: write # trusted publishing: only this job can mint the NuGet key
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dotnet-dist
+          path: dist/
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - name: NuGet login
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ env.NUGET_USER }}
+      # Pushes the .snupkg (symbols) with it
+      - name: Push
+        run: dotnet nuget push "dist/*.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json
