@@ -1,0 +1,71 @@
+name: Publish Python SDK
+
+# Publishes sdk/python to PyPI as txgold-business, with PyPI trusted publishing: GitHub signs a
+# short-lived token for this workflow, so no PyPI password or API token is stored anywhere.
+#
+# To release: set the version in sdk/python/pyproject.toml and txgold_business/client.py
+# (__version__), merge, then push a tag: git tag python-v0.2.0 && git push origin python-v0.2.0
+#
+# PyPI's side (once): the project's trusted publisher is this repository, the workflow file
+# publish-python.yml, and the environment pypi.
+
+on:
+  push:
+    tags: ['python-v*']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sdk/python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: The tag matches the version
+        run: |
+          tag="${GITHUB_REF_NAME#python-v}"
+          project=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          client=$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' src/txgold_business/client.py)
+          echo "tag $tag, pyproject.toml $project, client.py $client"
+          if [ "$tag" != "$project" ] || [ "$tag" != "$client" ]; then
+            echo "::error::Tag python-v$tag does not match the package version ($project, $client)."
+            exit 1
+          fi
+
+      - name: Test
+        run: |
+          pip install -e ".[dev]"
+          pytest -q
+
+      - name: Build
+        run: |
+          pip install build twine
+          python -m build
+          twine check --strict dist/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-dist
+          path: sdk/python/dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/txgold-business/
+    permissions:
+      id-token: write # trusted publishing: only this job can mint the PyPI token
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
