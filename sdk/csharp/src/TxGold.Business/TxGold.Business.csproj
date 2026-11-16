@@ -18,6 +18,9 @@
     <PackageProjectUrl>https://docs.txgold.money</PackageProjectUrl>
     <RepositoryUrl>https://github.com/tylerchessman/txgold-business</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- Debug symbols as a .snupkg, pushed with the package; Source Link points them at GitHub -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
