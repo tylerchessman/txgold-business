@@ -96,7 +96,16 @@ sdk/
   python/     txgold-business       (cryptography, httpx)
   csharp/     TxGold.Business       (no dependencies on .NET 8)
 samples/      the tour, in each language
+skills/       Agent Skills for AI coding assistants (Claude, GitHub Copilot)
 ```
+
+## Building with an AI assistant
+
+[`skills/`](skills) has [Agent Skills](https://agentskills.io) that teach Claude Code, Claude, GitHub
+Copilot and similar tools to write correct TxGold integrations: signing, payments, holds and
+webhooks. In Claude Code: `claude plugin marketplace add tylerchessman/txgold-business`, then
+`claude plugin install txgold-business@txgold`. For Copilot and others, see
+[skills/README.md](skills/README.md).
 
 ## Running the tests
 

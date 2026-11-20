@@ -1,0 +1,22 @@
+{
+  "name": "txgold",
+  "description": "TxGold Business API skills for AI coding assistants",
+  "owner": {
+    "name": "TxGold",
+    "url": "https://docs.txgold.money"
+  },
+  "plugins": [
+    {
+      "name": "txgold-business",
+      "description": "Write integrations with the TxGold Business API: signing and clients, payments and payment requests, holds (pay at the pump), and webhooks.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/txgold-business-api",
+        "./skills/txgold-payments",
+        "./skills/txgold-holds",
+        "./skills/txgold-webhooks"
+      ]
+    }
+  ]
+}
