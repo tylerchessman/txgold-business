@@ -40,8 +40,3 @@ features:
     details: Test TxGold, demo customers who pay your requests, and the same API as production.
     link: /sandbox
 ---
-
-::: warning Preview
-The API is open in the **Sandbox** and in **Production**. The SDKs are in preview: until 1.0, SDK
-minor versions may change their interface.
-:::

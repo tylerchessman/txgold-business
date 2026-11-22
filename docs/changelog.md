@@ -3,6 +3,9 @@
 Dated entries for the API and the SDKs. Additive changes (new fields, routes, error codes and enum
 values) can arrive at any time; anything breaking waits for a new major version.
 
+The SDKs are at 0.x. Until 1.0, a minor version (0.3 to 0.4) may change their interface; the entry
+for that version says what changed and how to update. Patch versions never do.
+
 ## Production opens
 
 - **Production** at `https://api.txgold.money`, with real TxGold and real customers. Sign in to
