@@ -162,8 +162,8 @@
         "tags": [
           "Accounts"
         ],
-        "summary": "Find a business or charity by its handle",
-        "description": "Resolves a handle such as @PoolMan to an account id before paying it. Exact match only, and only active business and charity accounts: personal accounts cannot be looked up.",
+        "summary": "Find an account by its handle",
+        "description": "Resolves a handle such as @PoolMan to an account id: a business before paying it, or a customer who gave you their handle, so you can store their account id (it stays the same if they rename the handle). Exact match on active accounts only. For a personal account only the id and type come back, and there is no lookup from an id to a handle. At most 60 lookups a minute per key.",
         "operationId": "lookupAccount",
         "parameters": [
           {
@@ -188,7 +188,17 @@
             }
           },
           "404": {
-            "description": "No active business or charity account has that handle.",
+            "description": "No active account has that handle.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limited: more than 60 lookups in a minute by this key. Retry-After says when to try again.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -231,6 +241,357 @@
           },
           "503": {
             "description": "rate_unavailable: no gold price has been recorded.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/holds": {
+      "post": {
+        "tags": [
+          "Holds"
+        ],
+        "summary": "Ask to hold an amount",
+        "description": "Asks a customer, named by payerAccountId or payerHandle, to approve a hold: once approved, you may charge them up to amount, once, before the hold ends (holdMinutes). With neither, makes an open hold request: nobody is notified, and whoever opens its holdUrl first can approve it. Nothing is reserved until the customer approves; poll GET /v1/holds/{id}, or take the hold.held webhook. Resending the identical signed request (same TxG-Timestamp) returns the existing hold with 200.",
+        "operationId": "createHold",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/holdCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Pending; a named customer was notified if their phone is registered. An open request carries its holdUrl.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/hold"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Already created by an identical earlier request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/hold"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "same_account, amount_below_minimum or payer_account_invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Holds"
+        ],
+        "summary": "List holds",
+        "description": "A business's holds, newest first.",
+        "operationId": "listHolds",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "pending, held, captured, released, declined, cancelled or expired.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "description": "Only holds with this tag, exactly.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "1-200, default 50.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "nextCursor from the previous page.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of holds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/page_hold"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request: a bad accountId, status, tag, limit or cursor.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The account does not exist, or the key is not attached to it.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/holds/{id}": {
+      "get": {
+        "tags": [
+          "Holds"
+        ],
+        "summary": "Get a hold",
+        "description": "Poll until status is held, then turn the pump on.",
+        "operationId": "getHold",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The hold.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/hold"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such hold, or the key is not attached to the business that asked for it.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/holds/{id}/release": {
+      "post": {
+        "tags": [
+          "Holds"
+        ],
+        "summary": "Release a hold",
+        "description": "Lets go of a held hold without charging anything: the customer's money is free at once. On a pending request, cancels it: the customer can no longer approve it.",
+        "operationId": "releaseHold",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Released, or cancelled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/hold"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "hold_not_open: already captured, released, declined, cancelled or expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/holds/{id}/capture": {
+      "post": {
+        "tags": [
+          "Holds"
+        ],
+        "summary": "Capture a hold",
+        "description": "Charges the customer what you used, once: more than 0 and at most the amount held. The rest goes back to them at once, and they get a receipt in the app. Resending the identical signed request returns the same capture with 200.",
+        "operationId": "captureHold",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/holdCapture"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Captured: the hold and the payment that charged it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/holdCaptureResult"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Already captured by an identical earlier request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/holdCaptureResult"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "hold_not_held (still pending, or already captured, released, declined or cancelled) or hold_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "capture_exceeds_hold.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -877,6 +1238,140 @@
           }
         }
       }
+    },
+    "/v1/sandbox/holds/{id}/approve": {
+      "post": {
+        "tags": [
+          "Sandbox"
+        ],
+        "summary": "Have a demo customer approve a hold (Sandbox only)",
+        "description": "Approves one of your pending hold requests as the demo customer it was sent to, exactly as the customer would in the TxGold app, so you can test pay-at-the-pump without a phone. An open request is approved by the demo customer in payerAccountId, or your first one. The customer is funded first if short. Not available in production.",
+        "operationId": "sandboxApproveHold",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/sandboxPayRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The hold, now held.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/hold"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "not_pending",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "payer_not_demo_customer, and the business rules an approval can break (daily_send_limit_exceeded).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/sandbox/customers": {
+      "get": {
+        "tags": [
+          "Sandbox"
+        ],
+        "summary": "List your demo customers (Sandbox only)",
+        "description": "The demo customers that came with your Sandbox business: the accounts that pay your payment requests and approve your hold requests on demand, since nobody holds a phone for them. Send requests to them, name one as payerAccountId, or fund one. Any key on the account may list them. Not available in production.",
+        "operationId": "sandboxListDemoCustomers",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "query",
+            "description": "Your Sandbox business account.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The demo customers, oldest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxDemoCustomerList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request: a bad accountId.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The account does not exist, or the key is not attached to it.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -922,18 +1417,20 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "The account id. For a customer, store it: it stays the same if they rename their handle."
           },
           "accountName": {
             "type": "string",
             "description": "The account's handle, without the leading @."
           },
           "displayName": {
-            "type": "string"
+            "type": "string",
+            "description": "The name a business or charity is shown by. Null for a personal account."
           },
           "type": {
             "type": "string",
-            "description": "business or charity."
+            "description": "personal, business or charity. Other values may be added."
           }
         }
       },
@@ -1074,6 +1571,170 @@
         },
         "description": "The other side of the payment."
       },
+      "hold": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The hold's id, from request to charge."
+          },
+          "status": {
+            "type": "string",
+            "description": "pending (waiting for the customer), held (you may charge it), captured, released, declined (by the customer), cancelled (by you) or expired. Other values may be added."
+          },
+          "accountId": {
+            "type": "string",
+            "description": "Your business account."
+          },
+          "payerAccountId": {
+            "type": "string",
+            "description": "The customer. For an open hold request, null until someone approves it."
+          },
+          "isOpen": {
+            "type": "boolean",
+            "description": "True for an open hold request: no customer named; whoever opens its holdUrl first can approve it."
+          },
+          "amount": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "description": "The amount held, or asked to be held.",
+            "format": "decimal",
+            "example": "12.50"
+          },
+          "memo": {
+            "type": "string"
+          },
+          "memoInternal": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "holdMinutes": {
+            "type": "integer",
+            "description": "How long the hold lasts once approved, in minutes.",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "approveBy": {
+            "type": "string",
+            "description": "When the request stops being approvable.",
+            "format": "date-time"
+          },
+          "heldAt": {
+            "type": "string",
+            "description": "When the customer approved it. Null until then.",
+            "format": "date-time"
+          },
+          "heldUntil": {
+            "type": "string",
+            "description": "When the hold ends: charge or release it before then, or it expires and the money is the customer's again. Null until approved.",
+            "format": "date-time"
+          },
+          "amountCaptured": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "description": "What was charged, once captured.",
+            "format": "decimal",
+            "example": "12.50"
+          },
+          "amountReleased": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "description": "What went back to the customer unused: the rest of the hold once captured, all of it once released.",
+            "format": "decimal",
+            "example": "12.50"
+          },
+          "paymentId": {
+            "type": "string",
+            "description": "The payment that charged it, once captured: GET /v1/payments/{id}."
+          },
+          "endedAt": {
+            "type": "string",
+            "description": "When the customer declined it or you cancelled it, or when it was captured or released.",
+            "format": "date-time"
+          },
+          "holdUrl": {
+            "type": "string",
+            "description": "An open hold request's link, while it is pending: opens the TxGold app on this request to approve it. Show it as a QR code, or hand the customer off to it from your own app. Null otherwise."
+          }
+        }
+      },
+      "holdCapture": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "description": "What to charge, more than 0 and at most the amount held. The rest is released at once. To charge nothing, release the hold instead.",
+            "format": "decimal",
+            "example": "12.50"
+          },
+          "memo": {
+            "type": "string",
+            "description": "The payment's memo, shown to the customer. Defaults to the hold's memo. At most 150 characters."
+          }
+        }
+      },
+      "holdCaptureResult": {
+        "type": "object",
+        "properties": {
+          "hold": {
+            "$ref": "#/components/schemas/hold"
+          },
+          "payment": {
+            "$ref": "#/components/schemas/payment"
+          }
+        }
+      },
+      "holdCreate": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Your business account, which may charge the hold once it is approved. The signing key must be attached to it."
+          },
+          "payerAccountId": {
+            "type": "string",
+            "description": "The customer asked to approve the hold, by account id (look a handle up once with GET /v1/accounts/lookup, and store the id). They get a push notification. Give this, or payerHandle, or neither for an open hold request that whoever opens its holdUrl first can approve."
+          },
+          "payerHandle": {
+            "type": "string",
+            "description": "The customer by TxGold handle, e.g. \"Jason-Miles\" (a leading @ is ignored), instead of payerAccountId."
+          },
+          "amount": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "description": "Amount of TxGold to hold, as a decimal string with at most 2 places: the most you will be able to charge.",
+            "format": "decimal",
+            "example": "12.50"
+          },
+          "memo": {
+            "type": "string",
+            "description": "Shown to the customer when they approve, and becomes the charge's memo. At most 150 characters."
+          },
+          "memoInternal": {
+            "type": "string",
+            "description": "Your own reference, never shown to the customer. At most 150 characters."
+          },
+          "approveBy": {
+            "type": "string",
+            "description": "When the request stops being approvable, ISO 8601. Default 10 minutes from now, at most 24 hours."
+          },
+          "holdMinutes": {
+            "type": "integer",
+            "description": "How long the hold lasts once approved, in minutes: you must charge or release it before then. Default 60, from 1 to 4320 (3 days).",
+            "format": "int32"
+          },
+          "tag": {
+            "type": "string",
+            "description": "Your own label, never shown to the customer: a pump, a till, a device. At most 50 characters. GET /v1/holds filters on it."
+          }
+        }
+      },
       "list_string": {
         "type": "array",
         "items": {
@@ -1087,6 +1748,20 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/accountTransaction"
+            }
+          },
+          "nextCursor": {
+            "type": "string"
+          }
+        }
+      },
+      "page_hold": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/hold"
             }
           },
           "nextCursor": {
@@ -1153,6 +1828,10 @@
           "paymentRequestId": {
             "type": "string",
             "description": "The payment request this payment paid, if any."
+          },
+          "holdId": {
+            "type": "string",
+            "description": "The hold this payment charged, if any (POST /v1/holds/{id}/capture)."
           },
           "refundOf": {
             "type": "string",
@@ -1347,6 +2026,41 @@
           "memoInternal": {
             "type": "string",
             "description": "Your own reference. At most 150 characters."
+          }
+        }
+      },
+      "sandboxDemoCustomer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The demo customer's account id: use it as payerAccountId, destinationAccountId or the account to fund."
+          },
+          "accountName": {
+            "type": "string",
+            "description": "Its handle, without the leading @, e.g. AcmeSandbox-Customer1: usable as payerHandle."
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "balance": {
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "type": "string",
+            "description": "Its test TxGold balance. The Sandbox tops a demo customer up when it is short, so this rarely matters.",
+            "format": "decimal",
+            "example": "12.50"
+          }
+        }
+      },
+      "sandboxDemoCustomerList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/sandboxDemoCustomer"
+            },
+            "description": "Oldest first. The first is the one that pays or approves an open request when you name none."
           }
         }
       },
