@@ -1,0 +1,83 @@
+name: Publish JavaScript SDK
+
+# Publishes sdk/javascript to npm as @txgold/business, with npm trusted publishing: GitHub signs a
+# short-lived token for this workflow, npm trades it for permission to publish this one package, and
+# no npm token is stored anywhere. npm adds a provenance statement linking the package to this run.
+#
+# To release: set the version in sdk/javascript/package.json (and package-lock.json, with
+# npm version --no-git-tag-version <version>) and VERSION in src/client.ts, merge, then push a tag:
+# git tag js-v0.3.1 && git push origin js-v0.3.1
+#
+# npm's side (once, after the first publish, which is done by hand): the package's Settings ->
+# Trusted publishing -> GitHub Actions: owner tylerchessman, repository txgold-business, workflow
+# publish-javascript.yml, environment npm. Then "Require two-factor authentication and disallow
+# tokens" in the same settings, so only this workflow can publish.
+
+on:
+  push:
+    tags: ['js-v*']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sdk/javascript
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: The tag matches the version
+        run: |
+          tag="${GITHUB_REF_NAME#js-v}"
+          package=$(node -p "require('./package.json').version")
+          lock=$(node -p "require('./package-lock.json').version")
+          client=$(sed -n "s/^export const VERSION = '\(.*\)';$/\1/p" src/client.ts)
+          echo "tag $tag, package.json $package, package-lock.json $lock, client.ts $client"
+          if [ "$tag" != "$package" ] || [ "$tag" != "$lock" ] || [ "$tag" != "$client" ]; then
+            echo "::error::Tag js-v$tag does not match the package version ($package, $lock, $client)."
+            exit 1
+          fi
+
+      - run: npm ci --no-audit --no-fund
+      - name: Test
+        run: npm test
+
+      # The exact tarball that is published: prepack builds dist/ first
+      - name: Pack
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          npm pack --pack-destination "$GITHUB_WORKSPACE/dist"
+          tar -tzf "$GITHUB_WORKSPACE"/dist/*.tgz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: javascript-dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/@txgold/business
+    permissions:
+      id-token: write # trusted publishing: only this job can publish
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: javascript-dist
+          path: dist/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+      # Trusted publishing needs npm 11.5.1 or later
+      - run: npm install -g npm@^11.5.1 && npm --version
+      - name: Publish
+        run: npm publish dist/*.tgz --access public
