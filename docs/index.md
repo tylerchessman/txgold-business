@@ -24,6 +24,9 @@ features:
   - title: Payment requests
     details: Ask a customer to pay. They get a push notification and pay in the TxGold app; you see it paid.
     link: /guides/payment-requests
+  - title: Holds
+    details: Hold an amount with the customer's approval, then charge what was used. Pay at the pump, rentals, deposits.
+    link: /guides/holds
   - title: Signed requests, no shared secrets
     details: Each request is signed with your integration's own key. TxGold never sees your private key.
     link: /authentication
