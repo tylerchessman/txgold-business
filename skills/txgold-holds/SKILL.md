@@ -27,8 +27,7 @@ POST /v1/holds ──► pending ──(customer approves in the app)──► h
    customer) or by opening the request's `holdUrl` (an open request, e.g. a QR on the pump). They
    see your name, the amount, the memo and how long it's held, and that once approved they can't
    cancel it. Approving sets the amount aside; their balance shows it as held.
-3. **Wait for `held`.** Take the `hold.held` webhook (see `txgold-webhooks`) or poll
-   `GET /v1/holds/{id}`. Only start the pump / unlock the car once it's `held`.
+3. **Wait for `held`.** Poll `GET /v1/holds/{id}` (see below). Only start the pump / unlock the car once it's `held`.
 4. **Charge what was used**, once: `POST /v1/holds/{id}/capture` with an amount from 0.01 up to the
    amount held. The rest is released at once, and the customer gets a receipt in the app.
    Charging nothing? **Release** it instead: `POST /v1/holds/{id}/release`.
@@ -76,9 +75,7 @@ nothing. Show the QR only for a pending hold.
 
 Approval happens on a person's phone, so it takes seconds to minutes, or never. Design for that:
 
-- **Webhooks first:** subscribe to `hold.held`, `hold.declined`, `hold.expired`. TxGold sends
-  `hold.held` within a few seconds of the approval.
-- **Poll as a fallback:** `GET /v1/holds/{id}` every 2-5 seconds while `pending`, and **stop at
+- **Poll** `GET /v1/holds/{id}` every 1-2 seconds while `pending`, and **stop at
   `approveBy`** (plus a few seconds). Act on `status`:
 
 | `status` | Do |

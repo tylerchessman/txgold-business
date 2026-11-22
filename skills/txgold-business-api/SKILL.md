@@ -1,13 +1,13 @@
 ---
 name: txgold-business-api
-description: Write code against the TxGold Business API (api.txgold.money, api-sandbox.txgold.money), the REST API businesses use to send and receive TxGold, a gold-backed digital currency. Use this skill whenever code calls TxGold - setting up a client from a TxGold .key.json key file, signing requests (TxG-Key-Id / TxG-Timestamp / TxG-Signature, TXG1-ECDSA-P256-SHA256), choosing Sandbox or Production, handling TxGold error codes, retrying safely, looking up accounts, handles or rates, or funding Sandbox test accounts. Also use it when the user mentions the @txgold/business, txgold-business or TxGold.Business SDKs, or says "TxGold" in a coding task, even in passing. For holds, payments and payment requests, and webhooks, use it together with the txgold-holds, txgold-payments and txgold-webhooks skills.
+description: Write code against the TxGold Business API (api.txgold.money, api-sandbox.txgold.money), the REST API businesses use to send and receive TxGold, a gold-backed digital currency. Use this skill whenever code calls TxGold - setting up a client from a TxGold .key.json key file, signing requests (TxG-Key-Id / TxG-Timestamp / TxG-Signature, TXG1-ECDSA-P256-SHA256), choosing Sandbox or Production, handling TxGold error codes, retrying safely, looking up accounts, handles or rates, or funding Sandbox test accounts. Also use it when the user mentions the @txgold/business, txgold-business or TxGold.Business SDKs, or says "TxGold" in a coding task, even in passing. For holds, payments and payment requests, use it together with the txgold-holds and txgold-payments skills.
 ---
 
 # TxGold Business API
 
 TxGold is a digital currency backed by gold: one TxGold is a thousandth of a troy ounce. The
 Business API lets a business's own systems send payments, ask customers to pay, hold an amount
-before charging it (pay at the pump), and hear about what happened by webhook. Customers use the
+before charging it (pay at the pump), and follow each one until it is done. Customers use the
 TxGold phone app; your code never touches their keys.
 
 This skill covers what every integration needs: a client, signing, conventions, errors, retries
@@ -17,7 +17,6 @@ and the Sandbox. The task-specific skills build on it:
 |---|---|
 | Send payments, refunds, ask to be paid (payment requests, QR codes, checkout) | `txgold-payments` |
 | Hold an amount, then charge what was used (fuel pumps, rentals, tabs) | `txgold-holds` |
-| Receive and verify webhooks | `txgold-webhooks` |
 
 Full docs: https://docs.txgold.money. The OpenAPI document: `https://api-sandbox.txgold.money/openapi/v1.json`.
 
@@ -195,7 +194,7 @@ routes above. Everything else (signing, roles, limits, errors, fees) behaves as 
 
 - Load the key from a path or secret store; keep it server side.
 - Make every create retry-safe: `maxRetries` on, and your own reference in `memoInternal`.
-- Treat a customer's approval or payment as **asynchronous**: they act on their phone. Prefer
-  webhooks; poll with a backoff and a deadline otherwise.
+- Treat a customer's approval or payment as **asynchronous**: they act on their phone. Poll
+  with a backoff and a deadline.
 - Print or log the `requestId` of any error, and the ids of what you created.
 - Signing by hand, or debugging `invalid_signature`: [references/signing.md](references/signing.md).
