@@ -180,3 +180,71 @@ def test_conflict_codes_pass_through(code):
     with pytest.raises(TxGoldApiError) as error:
         client(http).payments.create("1000004", "1.00", payment_request_id="9")
     assert (error.value.status, error.value.code) == (409, code)
+
+
+HELD = {"id": "9001", "status": "held", "accountId": "1000002", "payerAccountId": "1000004", "isOpen": False,
+        "amount": "150.00", "memo": "Pump 4", "memoInternal": None, "tag": "pump-4", "holdMinutes": 30,
+        "createdAt": "2026-11-22T00:00:00Z", "approveBy": "2026-11-22T00:10:00Z", "heldAt": "2026-11-22T00:00:20Z",
+        "heldUntil": "2026-11-22T00:30:20Z", "amountCaptured": None, "amountReleased": None, "paymentId": None,
+        "endedAt": None, "holdUrl": None}
+
+
+def test_holds_create_get_list_capture_release():
+    captured = {**HELD, "status": "captured", "amountCaptured": "63.17", "amountReleased": "86.83", "paymentId": "77"}
+    sent, http = fake([(201, {**HELD, "status": "pending"}), (200, HELD), (200, {"data": [HELD], "nextCursor": None}),
+                       (201, {"hold": captured, "payment": {"id": "77", "amount": "63.17"}}),
+                       (200, {**HELD, "status": "released"})])
+    c = client(http)
+
+    hold = c.holds.create("1000002", Decimal("150"), payer_handle="Jason-Miles", memo="Pump 4", tag="pump-4", hold_minutes=30)
+    assert hold["status"] == "pending"
+    assert (sent[0].method, sent[0].url.path) == ("POST", "/v1/holds")
+    assert json.loads(sent[0].content) == {"accountId": "1000002", "payerHandle": "Jason-Miles", "amount": "150.00",
+                                           "memo": "Pump 4", "tag": "pump-4", "holdMinutes": 30}
+
+    assert c.holds.get("9001")["status"] == "held"
+    assert sent[1].url.path == "/v1/holds/9001"
+
+    page = c.holds.list("1000002", status="held", tag="pump-4")
+    assert [h["id"] for h in page] == ["9001"]
+    assert parse_qs(sent[2].url.query.decode()) == {"accountId": ["1000002"], "status": ["held"], "tag": ["pump-4"]}
+
+    result = c.holds.capture("9001", "63.17", memo="Pump 4: 41.2 L")
+    assert result["hold"]["amountCaptured"] == "63.17" and result["payment"]["id"] == "77"
+    assert sent[3].url.path == "/v1/holds/9001/capture"
+    assert json.loads(sent[3].content) == {"amount": "63.17", "memo": "Pump 4: 41.2 L"}
+
+    assert c.holds.release("9001")["status"] == "released"
+    assert sent[4].url.path == "/v1/holds/9001/release" and sent[4].content == b""
+
+    for request in sent:
+        assert_signed(request)
+
+
+def test_holds_list_all_follows_next_cursor():
+    sent, http = fake([(200, {"data": [{"id": "1"}], "nextCursor": "next"}), (200, {"data": [{"id": "2"}], "nextCursor": None})])
+    assert [h["id"] for h in client(http).holds.list_all("1000002", tag="pump-4")] == ["1", "2"]
+    assert parse_qs(sent[1].url.query.decode()) == {"accountId": ["1000002"], "tag": ["pump-4"], "cursor": ["next"]}
+
+
+def test_holds_capture_refuses_float():
+    with pytest.raises(TypeError):
+        client(fake([])[1]).holds.capture("9001", 1.5)
+
+
+def test_holds_second_capture_surfaces_hold_not_held():
+    _, http = fake([(409, {"title": "Hold is not held", "status": 409, "code": "hold_not_held"})])
+    with pytest.raises(TxGoldApiError) as error:
+        client(http).holds.capture("9001", "0.01")
+    assert error.value.code == "hold_not_held"
+
+
+def test_sandbox_approve_hold_body_only_when_a_payer_is_given():
+    sent, http = fake([(200, HELD), (200, HELD)])
+    c = client(http)
+    c.sandbox.approve_hold("9001")
+    c.sandbox.approve_hold("9002", "1000005")
+    assert sent[0].url.path == "/v1/sandbox/holds/9001/approve" and sent[0].content == b""
+    assert json.loads(sent[1].content) == {"payerAccountId": "1000005"}
+    for request in sent:
+        assert_signed(request)

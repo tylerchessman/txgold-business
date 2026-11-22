@@ -6,6 +6,12 @@
 export type AccountType = string;
 export type Direction = 'debit' | 'credit';
 export type PaymentRequestStatus = 'pending' | 'paid' | 'dismissed' | 'cancelled' | 'expired';
+/**
+ * pending (waiting for the customer), held (approved: charge or release it), captured, released,
+ * declined, expired (not approved in time, or held and never charged), cancelled (released while
+ * pending). New values may be added: treat an unknown one as not held.
+ */
+export type HoldStatus = 'pending' | 'held' | 'captured' | 'released' | 'declined' | 'expired' | 'cancelled';
 
 export interface Page<T> {
   data: T[];
@@ -143,6 +149,73 @@ export interface PaymentRequestCreate {
   expiresAt?: string;
   /** Your own label (a till, a device, a campaign), never shown to the payer. At most 50 characters. */
   tag?: string;
+}
+
+export interface Hold {
+  id: string;
+  status: HoldStatus;
+  /** Your account, which charges the hold. */
+  accountId: string;
+  /** The customer. Null for an open hold until someone approves it. */
+  payerAccountId: string | null;
+  /** True for an open hold: no payer named, approvable once by anyone with its holdUrl. */
+  isOpen: boolean;
+  /** The most you can charge. */
+  amount: string;
+  memo: string | null;
+  memoInternal: string | null;
+  tag: string | null;
+  /** How long the hold lasts once approved. */
+  holdMinutes: number;
+  createdAt: string;
+  /** When the request stops being approvable. */
+  approveBy: string;
+  heldAt: string | null;
+  /** Capture or release before this, or the hold expires. */
+  heldUntil: string | null;
+  amountCaptured: string | null;
+  amountReleased: string | null;
+  /** The payment a capture made. */
+  paymentId: string | null;
+  endedAt: string | null;
+  /** An open hold's link while it is pending: share it, or draw it as a QR code. */
+  holdUrl: string | null;
+}
+
+export interface HoldCreate {
+  /** Your account, which will charge the hold. */
+  accountId: string;
+  /**
+   * The customer: they get a push notification. Give this, or payerHandle, or neither for an open
+   * hold that anyone with its holdUrl can approve once.
+   */
+  payerAccountId?: string;
+  /** The customer by TxGold handle (a leading @ is ignored), instead of payerAccountId. */
+  payerHandle?: string;
+  /** The most you will charge. */
+  amount: string;
+  /** Shown to the customer, and the memo of the charge. At most 150 characters. */
+  memo?: string;
+  /** Never shown to the customer. At most 150 characters. */
+  memoInternal?: string;
+  /** When the request stops being approvable. Default 10 minutes ahead, at most 24 hours. */
+  approveBy?: string;
+  /** How long the hold lasts once approved: 1 to 4320 (3 days), default 60. */
+  holdMinutes?: number;
+  /** Your own label (a pump, a device), never shown to the customer. At most 50 characters. */
+  tag?: string;
+}
+
+export interface HoldCapture {
+  /** What to charge: from 0.01 up to the amount held. The rest is released. */
+  amount: string;
+  /** The charge's memo. Default: the hold's memo. */
+  memo?: string;
+}
+
+export interface HoldCaptureResult {
+  hold: Hold;
+  payment: Payment;
 }
 
 export interface SandboxPayRequest {

@@ -93,6 +93,41 @@ class PaymentRequest(TypedDict):
     paymentUrl: Optional[str]
 
 
+class Hold(TypedDict):
+    id: str
+    #: pending, held (approved: charge or release it), captured, released, declined, expired or
+    #: cancelled. New values may be added: treat an unknown one as not held.
+    status: str
+    accountId: str
+    #: The customer. None for an open hold until someone approves it.
+    payerAccountId: Optional[str]
+    #: True for an open hold: no payer named, approvable once by anyone with its holdUrl.
+    isOpen: bool
+    #: The most you can charge.
+    amount: str
+    memo: Optional[str]
+    memoInternal: Optional[str]
+    #: Your own label (a pump, a device), never shown to the customer.
+    tag: Optional[str]
+    holdMinutes: int
+    createdAt: str
+    approveBy: str
+    heldAt: Optional[str]
+    #: Capture or release before this, or the hold expires.
+    heldUntil: Optional[str]
+    amountCaptured: Optional[str]
+    amountReleased: Optional[str]
+    paymentId: Optional[str]
+    endedAt: Optional[str]
+    #: An open hold's link while it is pending: share it, or draw it as a QR code.
+    holdUrl: Optional[str]
+
+
+class HoldCaptureResult(TypedDict):
+    hold: Hold
+    payment: Payment
+
+
 class Rate(TypedDict):
     usdPerTxGold: str
     usdPerTroyOunce: str

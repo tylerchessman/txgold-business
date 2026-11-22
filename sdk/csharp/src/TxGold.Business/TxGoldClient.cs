@@ -44,7 +44,7 @@ public sealed class TxGoldClientOptions
 public sealed class TxGoldClient : IDisposable
 {
     /// <summary>The SDK version, sent in the User-Agent.</summary>
-    public const string Version = "0.2.0";
+    public const string Version = "0.3.0";
 
     /// <summary>The API's base URL per environment.</summary>
     public static readonly IReadOnlyDictionary<string, Uri> BaseUrls = new Dictionary<string, Uri>
@@ -90,6 +90,7 @@ public sealed class TxGoldClient : IDisposable
 
         Payments = new PaymentsResource(this);
         PaymentRequests = new PaymentRequestsResource(this);
+        Holds = new HoldsResource(this);
         Accounts = new AccountsResource(this);
         Rates = new RatesResource(this);
         Sandbox = new SandboxResource(this);
@@ -106,6 +107,9 @@ public sealed class TxGoldClient : IDisposable
 
     /// <summary>Ask other accounts to pay you.</summary>
     public PaymentRequestsResource PaymentRequests { get; }
+
+    /// <summary>Hold an amount on a customer's balance, then charge what was used.</summary>
+    public HoldsResource Holds { get; }
 
     /// <summary>Your accounts, their history, and business lookup.</summary>
     public AccountsResource Accounts { get; }

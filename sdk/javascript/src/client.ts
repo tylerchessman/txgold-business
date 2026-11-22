@@ -2,11 +2,11 @@ import { TxGoldApiError } from './errors.js';
 import { loadKeyFile, type SigningKey } from './keys.js';
 import { TimestampClock, canonicalString, signCanonical } from './signing.js';
 import type {
-  Account, AccountLookup, AccountTransaction, Page, Payment, PaymentCreate, PaymentRequest,
+  Account, AccountLookup, AccountTransaction, Hold, HoldCapture, HoldCaptureResult, HoldCreate, HoldStatus, Page, Payment, PaymentCreate, PaymentRequest,
   PaymentRequestCreate, PaymentRequestStatus, Rate, RefundCreate, RequestOptions, SandboxPayRequest,
 } from './types.js';
 
-export const VERSION = '0.2.0';
+export const VERSION = '0.3.0';
 
 /** The API's base URL per environment. */
 export const BASE_URLS: Record<string, string> = {
@@ -40,6 +40,7 @@ export class TxGoldClient {
   readonly keyId: string;
   readonly payments: Payments;
   readonly paymentRequests: PaymentRequests;
+  readonly holds: Holds;
   readonly accounts: Accounts;
   readonly rates: Rates;
   readonly sandbox: Sandbox;
@@ -64,6 +65,7 @@ export class TxGoldClient {
 
     this.payments = new Payments(this);
     this.paymentRequests = new PaymentRequests(this);
+    this.holds = new Holds(this);
     this.accounts = new Accounts(this);
     this.rates = new Rates(this);
     this.sandbox = new Sandbox(this);
@@ -194,6 +196,57 @@ export class PaymentRequests {
   }
 }
 
+export interface HoldListOptions {
+  status?: HoldStatus;
+  /** Only holds with this tag. */
+  tag?: string;
+  /** 1-200, default 50. */
+  limit?: number;
+  cursor?: string;
+}
+
+/**
+ * Hold an amount on a customer's balance, then charge what was used (pay at the pump). The customer
+ * approves on their phone, so wait for `held` (poll get) before starting the service.
+ */
+export class Holds {
+  constructor(private readonly client: TxGoldClient) {}
+
+  /**
+   * Asks a customer to approve a hold: from payerAccountId, from payerHandle, or (with neither) an
+   * open hold that anyone with its holdUrl can approve once. Nothing is reserved until they approve.
+   */
+  create(hold: HoldCreate, options?: RequestOptions): Promise<Hold> {
+    return this.client.request('POST', '/v1/holds', undefined, hold, options);
+  }
+
+  get(holdId: string, options?: RequestOptions): Promise<Hold> {
+    return this.client.request('GET', `/v1/holds/${id(holdId)}`, undefined, undefined, options);
+  }
+
+  list(accountId: string, list: HoldListOptions = {}, options?: RequestOptions): Promise<Page<Hold>> {
+    return this.client.request('GET', '/v1/holds', { accountId, ...list }, undefined, options);
+  }
+
+  /** Every hold, across pages. */
+  listAll(accountId: string, list: Omit<HoldListOptions, 'cursor'> = {}): AsyncGenerator<Hold> {
+    return this.client.paginate((cursor) => this.list(accountId, { ...list, cursor }));
+  }
+
+  /**
+   * Charges a held hold, once: from 0.01 up to the amount held. The rest goes back to the customer
+   * at once. Gives the captured hold and the payment it made.
+   */
+  capture(holdId: string, capture: HoldCapture, options?: RequestOptions): Promise<HoldCaptureResult> {
+    return this.client.request('POST', `/v1/holds/${id(holdId)}/capture`, undefined, capture, options);
+  }
+
+  /** Charges nothing: releases a held hold, or cancels a pending request. */
+  release(holdId: string, options?: RequestOptions): Promise<Hold> {
+    return this.client.request('POST', `/v1/holds/${id(holdId)}/release`, undefined, undefined, options);
+  }
+}
+
 export interface TransactionListOptions {
   /** Earliest time, inclusive: ISO 8601, or a date (midnight UTC). */
   from?: string;
@@ -258,6 +311,15 @@ export class Sandbox {
     else pay = (payOrOptions ?? {}) as SandboxPayRequest;
     const body = pay.payerAccountId ? { payerAccountId: pay.payerAccountId } : undefined;
     return this.client.request('POST', `/v1/sandbox/payment-requests/${id(requestId)}/pay`, undefined, body, options);
+  }
+
+  /**
+   * Has the demo customer a pending hold was sent to approve it, as they would in the app. For an
+   * open hold, `approve.payerAccountId` picks which demo customer approves (default: the first one).
+   */
+  approveHold(holdId: string, approve: SandboxPayRequest = {}, options?: RequestOptions): Promise<Hold> {
+    const body = approve.payerAccountId ? { payerAccountId: approve.payerAccountId } : undefined;
+    return this.client.request('POST', `/v1/sandbox/holds/${id(holdId)}/approve`, undefined, body, options);
   }
 }
 

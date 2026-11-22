@@ -172,3 +172,83 @@ test('error codes the SDK does not know pass through', async () => {
     return true;
   });
 });
+
+const heldHold = {
+  id: '9001', status: 'held', accountId: '1000002', payerAccountId: '1000004', isOpen: false, amount: '150.00',
+  memo: 'Pump 4', memoInternal: 'order-8812', tag: 'pump-4', holdMinutes: 30, createdAt: '2026-11-22T00:00:00Z',
+  approveBy: '2026-11-22T00:10:00Z', heldAt: '2026-11-22T00:00:20Z', heldUntil: '2026-11-22T00:30:20Z',
+  amountCaptured: null, amountReleased: null, paymentId: null, endedAt: null, holdUrl: null,
+};
+
+test('holds: create, get, list, capture and release send what the API expects', async () => {
+  const captured = { ...heldHold, status: 'captured', amountCaptured: '63.17', amountReleased: '86.83', paymentId: '77' };
+  const { sent, impl } = fakeFetch([
+    { status: 201, body: { ...heldHold, status: 'pending', heldAt: null, heldUntil: null } },
+    { status: 200, body: heldHold },
+    { status: 200, body: { data: [heldHold], nextCursor: null } },
+    { status: 201, body: { hold: captured, payment: { id: '77', amount: '63.17' } } },
+    { status: 200, body: { ...heldHold, status: 'released', amountReleased: '150.00' } },
+  ]);
+  const c = client(impl);
+
+  const created = await c.holds.create({ accountId: '1000002', payerHandle: 'Jason-Miles', amount: '150.00', memo: 'Pump 4', tag: 'pump-4', holdMinutes: 30 });
+  assert.equal(created.status, 'pending');
+  assert.equal(sent[0].method, 'POST');
+  assert.equal(sent[0].url.pathname, '/v1/holds');
+  assert.deepEqual(bodyOf(sent[0]), { accountId: '1000002', payerHandle: 'Jason-Miles', amount: '150.00', memo: 'Pump 4', tag: 'pump-4', holdMinutes: 30 });
+
+  const hold = await c.holds.get('9001');
+  assert.equal(hold.status, 'held');
+  assert.equal(sent[1].url.pathname, '/v1/holds/9001');
+
+  const page = await c.holds.list('1000002', { status: 'held', tag: 'pump-4', limit: 5 });
+  assert.equal(page.data[0].id, '9001');
+  assert.equal(sent[2].url.searchParams.get('accountId'), '1000002');
+  assert.equal(sent[2].url.searchParams.get('status'), 'held');
+  assert.equal(sent[2].url.searchParams.get('tag'), 'pump-4');
+
+  const result = await c.holds.capture('9001', { amount: '63.17', memo: 'Pump 4: 41.2 L' });
+  assert.equal(result.hold.amountCaptured, '63.17');
+  assert.equal(result.payment.id, '77');
+  assert.equal(sent[3].url.pathname, '/v1/holds/9001/capture');
+  assert.deepEqual(bodyOf(sent[3]), { amount: '63.17', memo: 'Pump 4: 41.2 L' });
+
+  const released = await c.holds.release('9001');
+  assert.equal(released.status, 'released');
+  assert.equal(sent[4].url.pathname, '/v1/holds/9001/release');
+  assert.equal(sent[4].body.length, 0);
+
+  for (const s of sent) assertSigned(s);
+});
+
+test('holds: listAll follows the cursor', async () => {
+  const { sent, impl } = fakeFetch([
+    { status: 200, body: { data: [{ ...heldHold, id: '1' }], nextCursor: 'next+1' } },
+    { status: 200, body: { data: [{ ...heldHold, id: '2' }], nextCursor: null } },
+  ]);
+  const ids: string[] = [];
+  for await (const h of client(impl).holds.listAll('1000002', { tag: 'pump-4' })) ids.push(h.id);
+  assert.deepEqual(ids, ['1', '2']);
+  assert.equal(sent[1].url.searchParams.get('cursor'), 'next+1');
+  assert.equal(sent[1].url.searchParams.get('tag'), 'pump-4');
+});
+
+test('holds: a second capture surfaces hold_not_held', async () => {
+  const { impl } = fakeFetch([{ status: 409, body: { code: 'hold_not_held', title: 'Hold is not held', status: 409, requestId: 'r1' } }]);
+  await assert.rejects(client(impl).holds.capture('9001', { amount: '0.01' }), (e: unknown) => {
+    assert.ok(e instanceof TxGoldApiError);
+    assert.equal(e.code, 'hold_not_held');
+    return true;
+  });
+});
+
+test('sandbox approveHold sends a body only when a payer is given', async () => {
+  const { sent, impl } = fakeFetch([{ status: 200, body: heldHold }, { status: 200, body: heldHold }]);
+  const c = client(impl);
+  await c.sandbox.approveHold('9001');
+  await c.sandbox.approveHold('9002', { payerAccountId: '1000005' });
+  assert.equal(sent[0].url.pathname, '/v1/sandbox/holds/9001/approve');
+  assert.equal(sent[0].body.length, 0);
+  assert.deepEqual(bodyOf(sent[1]), { payerAccountId: '1000005' });
+  for (const s of sent) assertSigned(s);
+});

@@ -10,9 +10,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
     <PackageId>TxGold.Business</PackageId>
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
     <Authors>TxGold</Authors>
-    <Description>TxGold Business API client: signed requests, payments, payment requests, accounts.</Description>
+    <Description>TxGold Business API client: signed requests, payments, payment requests, holds, accounts.</Description>
     <PackageTags>txgold;payments;gold;api</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://docs.txgold.money</PackageProjectUrl>
