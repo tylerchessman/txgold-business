@@ -2,6 +2,9 @@
 
 From nothing to a payment in the Sandbox in about ten minutes.
 
+Using Claude Code, GitHub Copilot or Claude? Do steps 1 and 2 here, then see
+[Build with an AI assistant](/ai-assistants): the assistant writes the rest.
+
 ## 1. Get a Sandbox business
 
 The Sandbox is a separate copy of TxGold with test money (see [The Sandbox](/sandbox)). TxGold

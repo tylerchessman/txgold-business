@@ -20,6 +20,8 @@ values) can arrive at any time; anything breaking waits for a new major version.
 - **A live demo** at [demo.txgold.money](https://demo.txgold.money): the six
   [ways to get paid](/guides/ways-to-get-paid), each from both sides, with every API call shown.
   Its code is the new `samples/demo-site`.
+- **Agent Skills** for AI coding assistants (Claude Code, GitHub Copilot, Claude): they teach the
+  assistant to write correct TxGold code. See [Build with an AI assistant](/ai-assistants).
 
 ## 2026-11-11
 

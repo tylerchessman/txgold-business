@@ -36,6 +36,7 @@ export default defineConfig({
         items: [
           { text: 'Overview', link: '/' },
           { text: 'Quickstart', link: '/quickstart' },
+          { text: 'Build with an AI assistant', link: '/ai-assistants' },
           { text: 'Authentication', link: '/authentication' },
           { text: 'The Sandbox', link: '/sandbox' },
         ],
