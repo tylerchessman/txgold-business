@@ -17,14 +17,14 @@ export interface Way {
 
 export const WAYS: Way[] = [
   {
-    slug: 'your-code', number: 1, title: 'Your code', code: 'None', amountFixed: false,
+    slug: 'your-code', number: 1, title: 'Your QR code', code: 'None', amountFixed: false,
     summary: 'A QR code on the counter that opens the TxGold app ready to pay you. The customer types the amount.',
-    bestFor: 'A counter, a tip jar, a donation', anchor: '_1-your-code',
+    bestFor: 'A counter, a tip jar, a donation', anchor: '_1-your-qr-code',
   },
   {
-    slug: 'code-with-amount', number: 2, title: 'A code with an amount', code: 'None', amountFixed: false,
-    summary: 'The same code with a suggested amount and memo built in: one per item on a menu or price list.',
-    bestFor: 'A price list, a menu', anchor: '_2-a-code-with-an-amount',
+    slug: 'code-with-amount', number: 2, title: 'A QR code with an amount', code: 'None', amountFixed: false,
+    summary: 'The same QR code with a suggested amount and memo built in: one per item on a menu or price list.',
+    bestFor: 'A price list, a menu', anchor: '_2-a-qr-code-with-an-amount',
   },
   {
     slug: 'request-from-app', number: 3, title: 'A request from the app', code: 'None', amountFixed: true,
