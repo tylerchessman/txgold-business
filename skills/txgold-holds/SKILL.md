@@ -125,7 +125,8 @@ for a pump controller restarting: find its `held` holds and capture or release e
 
 `POST /v1/sandbox/holds/{id}/approve` has a demo customer approve a pending hold exactly as in the
 app (the demo customer is funded first if short). For an open request, pass
-`{ "payerAccountId": "<a demo customer>" }` or leave it out for your first demo customer. Answers
+`{ "payerAccountId": "<a demo customer>" }` or leave it out for your first demo customer
+(`GET /v1/sandbox/customers?accountId=…` lists them). Answers
 the hold, now `held`. Sandbox `holdUrl`s open the real app, which can't see Sandbox holds, so
 approve them with this route instead.
 

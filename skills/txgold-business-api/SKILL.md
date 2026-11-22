@@ -175,9 +175,17 @@ phones. Extra routes, Sandbox only:
 
 | Route | SDK | Does |
 |---|---|---|
+| `GET /v1/sandbox/customers?accountId={id}` | generic `request` | Lists your demo customers: `data[]` of `id`, `accountName`, `displayName`, `balance` |
 | `POST /v1/sandbox/accounts/{id}/fund` `{amount}` | `sandbox.fund(id, '50.00')` | Adds test TxGold (at most 1000.00 a call) |
 | `POST /v1/sandbox/payment-requests/{id}/pay` | `sandbox.payRequest(id)` | A demo customer pays a request |
 | `POST /v1/sandbox/holds/{id}/approve` | generic `request` | A demo customer approves a hold request |
+
+**Finding the demo customers:** don't guess ids or handles. Call `GET /v1/sandbox/customers`
+with the business's account id and use the ids it returns as `payerAccountId` /
+`destinationAccountId`. The first one listed is the default payer of an open request or hold.
+If that route isn't available, ask the developer for the demo customer ids that came with their
+Sandbox business. Outside the Sandbox there are no demo customers: a real person approves on
+their phone, so ask the developer which customer account to use.
 
 Links and QR codes (`paymentUrl`, `holdUrl`) open the real TxGold app, which can't see Sandbox
 requests: in the Sandbox, show them to check your screens, then simulate the customer with the

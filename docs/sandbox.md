@@ -20,6 +20,19 @@ When TxGold sets up your Sandbox business you get its account id, one or two **d
 accounts, and an **owner key file** for signing in to the business portal (the Sandbox has no
 phones, so the file stands in for the Admin's TxGold app).
 
+Lost the demo customers' ids? Any of your keys can list them:
+
+```http
+GET /v1/sandbox/customers?accountId={accountId}
+```
+
+```json
+{ "data": [ { "id": "1000004", "accountName": "AcmeSandbox-Customer1",
+              "displayName": "Demo Customer 1 (Acme Sandbox)", "balance": "48.50" } ] }
+```
+
+Oldest first. The first is the one that pays an open request when you don't name a payer.
+
 ## Test money
 
 Add test TxGold to your account, or to one of your demo customers:
