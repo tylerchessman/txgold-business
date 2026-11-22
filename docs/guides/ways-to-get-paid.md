@@ -17,9 +17,17 @@ Every payment lands in your account the same way: in your
 [transactions](/guides/accounts), and as a "payment received" notification on your phone. Webhooks
 are coming; until then, your code polls (each example shows how).
 
+::: tip See them all working
+[demo.txgold.money](https://demo.txgold.money) runs each way against the Sandbox: the business
+on one side, the customer's TxGold app on the other, and each API call between them, with the
+sample code behind it.
+:::
+
 ## 1. Your code
 
 **For:** anywhere a customer can see your sign: a counter, a stall, a donation box.
+
+**Try it** in the [live demo](https://demo.txgold.money/your-code).
 
 The TxGold app's **My code** screen shows your account as a QR code. Print it or show it. The
 payer scans it, types the amount and pays.
@@ -35,6 +43,8 @@ The link inside the code is `https://app.txgold.money/RequestPayment?AccountId=<
 ## 2. A code with an amount
 
 **For:** a fixed menu or price list, where a code per item is handy.
+
+**Try it** in the [live demo](https://demo.txgold.money/code-with-amount).
 
 **My code** can add an amount to the code, or you can build the link yourself, with a memo too:
 
@@ -53,6 +63,8 @@ https://app.txgold.money/RequestPayment?AccountId=1000007&AccountName=PoolMan&Am
 
 **For:** billing someone you know: a client, a member, a tenant.
 
+**Try it** in the [live demo](https://demo.txgold.money/request-from-app).
+
 In the TxGold app, **Request** asks a person to pay a fixed amount. They get a push notification
 and a card on their home screen, and pay with a tap. The same request can be made through the API,
 with `payerAccountId`, and every request you've made, paid or not, is in
@@ -65,6 +77,8 @@ with `payerAccountId`, and every request you've made, paid or not, is in
 
 **For:** an online shop. The customer types their TxGold handle at checkout and approves on their
 phone.
+
+**Try it** in the [live demo](https://demo.txgold.money/website-checkout).
 
 1. Create a request with `payerHandle`: the handle the customer typed.
 2. The customer gets a push notification and approves the payment in the TxGold app.
@@ -82,6 +96,8 @@ phone.
 
 **For:** your own mobile or web app.
 
+**Try it** in the [live demo](https://demo.txgold.money/app-checkout).
+
 The same as checkout on a website, with one shortcut. Create an open request and open its
 `paymentUrl` on the customer's phone. The TxGold app opens straight on the request, so the
 customer doesn't wait for a notification. Then poll until it's `paid`.
@@ -93,6 +109,8 @@ customer doesn't wait for a notification. Then poll until it's `paid`.
 ## 6. An open request: a link or QR
 
 **For:** invoices, and tills that show a new QR for each sale.
+
+**Try it** in the [live demo](https://demo.txgold.money/open-request).
 
 An [open request](/guides/payment-requests#open-requests) names no payer. You get a `paymentUrl`:
 put it in an invoice email, or draw it as a QR on a screen or a receipt. The first person to pay
@@ -123,4 +141,6 @@ in for real people.
 | `invoice-link` | Way 6: an open request, its `paymentUrl`, a QR image, poll |
 | `till-qr` | Way 6 at a counter: a new open request per sale, shown as a QR, poll, cancel if abandoned |
 
-The `tour` sample remains the quick tour of the whole API.
+The `tour` sample remains the quick tour of the whole API. The
+[demo site](https://github.com/tylerchessman/txgold-business/tree/main/samples/demo-site) is the
+largest sample: a web page and a small server that holds the key.

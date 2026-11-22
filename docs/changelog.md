@@ -17,6 +17,9 @@ values) can arrive at any time; anything breaking waits for a new major version.
   `POST /v1/sandbox/holds/{id}/approve`.
 - **SDKs 0.3.0** add `holds` (create, get, list, capture, release) and the Sandbox's hold approval.
 - The OpenAPI document lists both servers.
+- **A live demo** at [demo.txgold.money](https://demo.txgold.money): the six
+  [ways to get paid](/guides/ways-to-get-paid), each from both sides, with every API call shown.
+  Its code is the new `samples/demo-site`.
 
 ## 2026-11-11
 
