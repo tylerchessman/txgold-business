@@ -66,14 +66,15 @@ using var client = new TxGoldClient(new TxGoldClientOptions { KeyFile = keyPath,
 var account = await client.Accounts.GetAsync("1000002");
 ```
 
-Wrapped resources: `payments`, `paymentRequests` / `payment_requests` / `PaymentRequests`,
+Wrapped resources: `payments`, `paymentRequests` / `payment_requests` / `PaymentRequests`, `holds`,
 `accounts`, `rates`, `sandbox`. Python returns plain dicts with the API's camelCase keys
 (`account["balance"]`); C# returns typed models.
 
 ### Routes the SDK doesn't wrap yet
 
-New routes (holds, for example) may reach the API before an SDK method exists. Every SDK has a
-signed generic call; use it rather than hand-rolling HTTP:
+New routes may reach the API before an SDK method exists (holds did: SDKs before 0.3.0 have no
+`holds`, so the examples use them). Every SDK has a signed generic call; use it rather than
+hand-rolling HTTP:
 
 ```js
 const hold = await client.request('POST', '/v1/holds', undefined, { accountId, payerHandle, amount: '25.00' });

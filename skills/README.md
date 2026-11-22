@@ -24,12 +24,12 @@ claude plugin install txgold-business@txgold
 ```
 
 Or inside a session: `/plugin marketplace add tylerchessman/txgold-business`, then
-`/plugin install txgold-business@txgold`. To use them in one project only, copy the four folders
+`/plugin install txgold-business@txgold`. To use them in one project only, copy the three folders
 into that project's `.claude/skills/`.
 
 ### GitHub Copilot
 
-Copy the four `txgold-*` folders into your repository's `.github/skills/` (or `~/.copilot/skills/`
+Copy the three `txgold-*` folders into your repository's `.github/skills/` (or `~/.copilot/skills/`
 for all your projects). Copilot's agent mode, CLI and cloud agent pick them up from there.
 
 ```bash

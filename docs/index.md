@@ -33,6 +33,9 @@ features:
   - title: Signed requests, no shared secrets
     details: Each request is signed with your integration's own key. TxGold never sees your private key.
     link: /authentication
+  - title: Build with an AI assistant
+    details: Skills that teach Claude Code, GitHub Copilot and Claude to write correct TxGold code. Ask for checkout or a pump controller.
+    link: /ai-assistants
   - title: A Sandbox to build in
     details: Test TxGold, demo customers who pay your requests, and the same API as production.
     link: /sandbox
