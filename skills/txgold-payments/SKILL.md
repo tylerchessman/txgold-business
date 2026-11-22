@@ -81,7 +81,7 @@ account id positional; `payer_handle=` for a handle). C#: `PaymentRequests.Creat
   amount for display only; the app shows and charges what TxGold stored.
 - Statuses: `pending`, `paid` (see `paymentId`), `dismissed` (by the payer), `cancelled` (by you),
   `expired`. Unknown future values: treat as not paid.
-- **Learn it was paid:** the `payment_request.paid` webhook (`txgold-webhooks`), or poll
+- **Learn it was paid:** poll
   `paymentRequests.get(id)` with a backoff until it leaves `pending` or `expiresAt` passes.
   `listAll(accountId, { status: 'pending' })` walks your open ones.
 - Cancel: `paymentRequests.cancel(id)`. A second cancel gives `request_not_pending`: treat as done.

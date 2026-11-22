@@ -3,19 +3,16 @@
 These [Agent Skills](https://agentskills.io) teach an AI coding assistant (Claude Code, Claude,
 GitHub Copilot, and other tools that read `SKILL.md` files) how to write correct code against the
 TxGold Business API: how to sign requests, which fields and statuses exist, what each error means,
-and the patterns that keep money safe (idempotent retries, waiting for a customer's approval,
-verifying webhooks).
+and the patterns that keep money safe (idempotent retries, and waiting for a customer's approval).
 
 | Skill | Use it for |
 |---|---|
 | [`txgold-business-api`](txgold-business-api/SKILL.md) | Clients and key files, request signing, Sandbox vs Production, conventions, errors, retries, accounts and rates. The base for the others |
 | [`txgold-payments`](txgold-payments/SKILL.md) | Sending payments, refunds, payment requests, open requests with a link or QR code |
 | [`txgold-holds`](txgold-holds/SKILL.md) | Hold, then charge what was used: pay at the pump, rentals, deposits |
-| [`txgold-webhooks`](txgold-webhooks/SKILL.md) | Receiving and verifying webhooks: holds approved, requests paid, payments received |
 
 The assistant loads a skill when your request needs it: "add TxGold checkout to my Flask app",
-"write a pump controller that holds 100 TxGold and charges what was pumped", "verify TxGold webhooks
-in my Express server".
+"write a pump controller that holds 100 TxGold and charges what was pumped".
 
 ## Install
 
@@ -54,12 +51,11 @@ relevant `SKILL.md` to its context or rules file.
 
 Each `SKILL.md` is short guidance plus copy-ready code in JavaScript, Python and C#.
 `txgold-business-api/references/` has the full error-code table and request signing without an SDK.
-The request-signing code is checked against the test vectors in [`vectors/`](../vectors), and the
-webhook verifiers against the signature vector in `txgold-webhooks`.
+The request-signing code is checked against the test vectors in [`vectors/`](../vectors).
 
 The skills describe the API; the source of truth is the
 [OpenAPI document](../openapi/v1.json) and https://docs.txgold.money. If they disagree, the API
 wins: please open an issue.
 
-Your key file and webhook secret never belong in a prompt, a skill, or source control. The skills
-tell the assistant to load them from a path or environment variable at run time.
+Your key file never belongs in a prompt, a skill, or source control. The skills
+tell the assistant to load it from a path or environment variable at run time.

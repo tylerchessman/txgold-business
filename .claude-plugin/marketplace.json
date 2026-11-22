@@ -8,14 +8,13 @@
   "plugins": [
     {
       "name": "txgold-business",
-      "description": "Write integrations with the TxGold Business API: signing and clients, payments and payment requests, holds (pay at the pump), and webhooks.",
+      "description": "Write integrations with the TxGold Business API: signing and clients, payments and payment requests, and holds (pay at the pump).",
       "source": "./",
       "strict": false,
       "skills": [
         "./skills/txgold-business-api",
         "./skills/txgold-payments",
-        "./skills/txgold-holds",
-        "./skills/txgold-webhooks"
+        "./skills/txgold-holds"
       ]
     }
   ]
