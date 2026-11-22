@@ -86,6 +86,35 @@ public sealed record PaymentRequest(
     public string? PaymentUrl { get; init; }
 }
 
+/// <summary>
+/// A hold on a customer's balance that your business may charge once (pay at the pump). <see cref="Status"/>:
+/// pending (waiting for the customer), held (charge or release it), captured, released, declined, expired or
+/// cancelled. New values may be added: treat an unknown one as not held.
+/// </summary>
+public sealed record Hold(
+    string Id,
+    string Status,
+    string AccountId,
+    string? PayerAccountId,
+    bool IsOpen,
+    [property: JsonConverter(typeof(MoneyConverter))] decimal Amount,
+    string? Memo,
+    string? MemoInternal,
+    string? Tag,
+    int HoldMinutes,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset ApproveBy,
+    DateTimeOffset? HeldAt,
+    DateTimeOffset? HeldUntil,
+    [property: JsonConverter(typeof(NullableMoneyConverter))] decimal? AmountCaptured,
+    [property: JsonConverter(typeof(NullableMoneyConverter))] decimal? AmountReleased,
+    string? PaymentId,
+    DateTimeOffset? EndedAt,
+    string? HoldUrl);
+
+/// <summary>A captured hold and the payment that charged it.</summary>
+public sealed record HoldCaptureResult(Hold Hold, Payment Payment);
+
 /// <summary>The TxGold rate.</summary>
 public sealed record Rate(
     [property: JsonConverter(typeof(MoneyConverter))] decimal UsdPerTxGold,
@@ -165,6 +194,52 @@ public sealed class PaymentRequestCreate
 
     /// <summary>Your own label (a till, a device, a campaign), never shown to the payer; up to 50 characters.</summary>
     public string? Tag { get; init; }
+}
+
+/// <summary>
+/// A hold to ask for. Name the customer by <see cref="PayerAccountId"/> or <see cref="PayerHandle"/>, or neither
+/// for an open hold that anyone with its <see cref="Hold.HoldUrl"/> can approve once.
+/// </summary>
+public sealed class HoldCreate
+{
+    /// <summary>Your account, which will charge the hold.</summary>
+    public required string AccountId { get; init; }
+
+    /// <summary>The customer, who gets a push notification. Not with <see cref="PayerHandle"/>.</summary>
+    public string? PayerAccountId { get; init; }
+
+    /// <summary>The customer by TxGold handle (a leading @ is ignored), instead of <see cref="PayerAccountId"/>.</summary>
+    public string? PayerHandle { get; init; }
+
+    /// <summary>The most you will charge; at most 2 decimal places.</summary>
+    [JsonConverter(typeof(MoneyConverter))]
+    public required decimal Amount { get; init; }
+
+    /// <summary>Shown to the customer, and the memo of the charge; up to 150 characters.</summary>
+    public string? Memo { get; init; }
+
+    /// <summary>Your own reference, never shown to the customer; up to 150 characters.</summary>
+    public string? MemoInternal { get; init; }
+
+    /// <summary>When the request stops being approvable. Default 10 minutes ahead, at most 24 hours.</summary>
+    public DateTimeOffset? ApproveBy { get; init; }
+
+    /// <summary>How long the hold lasts once approved: 1 to 4320 minutes (3 days), default 60.</summary>
+    public int? HoldMinutes { get; init; }
+
+    /// <summary>Your own label (a pump, a device), never shown to the customer; up to 50 characters.</summary>
+    public string? Tag { get; init; }
+}
+
+/// <summary>What to charge a held hold.</summary>
+public sealed class HoldCapture
+{
+    /// <summary>From 0.01 up to the amount held. The rest goes back to the customer.</summary>
+    [JsonConverter(typeof(MoneyConverter))]
+    public required decimal Amount { get; init; }
+
+    /// <summary>The charge's memo. Null: the hold's memo.</summary>
+    public string? Memo { get; init; }
 }
 
 /// <summary>Money on the wire: a decimal string such as "12.50", never a JSON number.</summary>

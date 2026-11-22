@@ -73,6 +73,56 @@ public sealed class PaymentRequestsResource
             cancellationToken: cancellationToken);
 }
 
+/// <summary>
+/// Hold an amount on a customer's balance, then charge what was used (pay at the pump). The customer approves
+/// on their phone, so wait for <c>held</c> (poll <see cref="GetAsync"/>) before starting the service.
+/// </summary>
+public sealed class HoldsResource
+{
+    private readonly TxGoldClient _client;
+    internal HoldsResource(TxGoldClient client) => _client = client;
+
+    /// <summary>
+    /// Asks a customer to approve a hold, or with no customer named, makes an open hold whose
+    /// <see cref="Hold.HoldUrl"/> anyone can approve once. Nothing is reserved until they approve.
+    /// </summary>
+    public Task<Hold> CreateAsync(HoldCreate hold, string? timestamp = null, CancellationToken cancellationToken = default) =>
+        _client.SendAsync<Hold>(HttpMethod.Post, "/v1/holds", body: hold, timestamp: timestamp, cancellationToken: cancellationToken);
+
+    /// <summary>One hold.</summary>
+    public Task<Hold> GetAsync(string holdId, CancellationToken cancellationToken = default) =>
+        _client.SendAsync<Hold>(HttpMethod.Get, $"/v1/holds/{PaymentsResource.Segment(holdId)}", cancellationToken: cancellationToken);
+
+    /// <summary>A page of holds, optionally only one <paramref name="status"/> or <paramref name="tag"/>.</summary>
+    public Task<Page<Hold>> ListAsync(string accountId, string? status = null, string? tag = null, int? limit = null, string? cursor = null,
+        CancellationToken cancellationToken = default) =>
+        _client.SendAsync<Page<Hold>>(HttpMethod.Get, "/v1/holds", new[]
+        {
+            PaymentsResource.Pair("accountId", accountId),
+            PaymentsResource.Pair("status", status),
+            PaymentsResource.Pair("tag", tag),
+            PaymentsResource.Pair("limit", limit?.ToString(CultureInfo.InvariantCulture)),
+            PaymentsResource.Pair("cursor", cursor),
+        }, cancellationToken: cancellationToken);
+
+    /// <summary>Every hold, across pages.</summary>
+    public IAsyncEnumerable<Hold> ListAllAsync(string accountId, string? status = null, string? tag = null, int? limit = null,
+        CancellationToken cancellationToken = default) =>
+        _client.PaginateAsync(cursor => ListAsync(accountId, status, tag, limit, cursor, cancellationToken), cancellationToken);
+
+    /// <summary>
+    /// Charges a held hold, once: from 0.01 up to the amount held. The rest goes back to the customer at once.
+    /// </summary>
+    public Task<HoldCaptureResult> CaptureAsync(string holdId, HoldCapture capture, string? timestamp = null,
+        CancellationToken cancellationToken = default) =>
+        _client.SendAsync<HoldCaptureResult>(HttpMethod.Post, $"/v1/holds/{PaymentsResource.Segment(holdId)}/capture",
+            body: capture, timestamp: timestamp, cancellationToken: cancellationToken);
+
+    /// <summary>Charges nothing: releases a held hold, or cancels a pending request.</summary>
+    public Task<Hold> ReleaseAsync(string holdId, CancellationToken cancellationToken = default) =>
+        _client.SendAsync<Hold>(HttpMethod.Post, $"/v1/holds/{PaymentsResource.Segment(holdId)}/release", cancellationToken: cancellationToken);
+}
+
 /// <summary>Your accounts, their history, and business lookup.</summary>
 public sealed class AccountsResource
 {
@@ -147,6 +197,16 @@ public sealed class SandboxResource
     public Task<Payment> PayRequestAsync(string requestId, string? payerAccountId, CancellationToken cancellationToken = default) =>
         _client.SendAsync<Payment>(HttpMethod.Post, $"/v1/sandbox/payment-requests/{PaymentsResource.Segment(requestId)}/pay",
             // No body at all unless a payer is named; the signature covers the (empty) body as sent
+            body: payerAccountId is null ? null : new PayBody { PayerAccountId = payerAccountId },
+            cancellationToken: cancellationToken);
+
+    /// <summary>
+    /// Has a demo customer approve a pending hold, as they would in the app. <paramref name="payerAccountId"/>
+    /// picks which of your demo customers approves an open hold (null: your first); it is ignored for a hold to
+    /// a named payer.
+    /// </summary>
+    public Task<Hold> ApproveHoldAsync(string holdId, string? payerAccountId = null, CancellationToken cancellationToken = default) =>
+        _client.SendAsync<Hold>(HttpMethod.Post, $"/v1/sandbox/holds/{PaymentsResource.Segment(holdId)}/approve",
             body: payerAccountId is null ? null : new PayBody { PayerAccountId = payerAccountId },
             cancellationToken: cancellationToken);
 

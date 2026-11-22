@@ -1,7 +1,7 @@
 {
   "name": "@txgold/business",
-  "version": "0.2.0",
-  "description": "TxGold Business API client for Node.js: signed requests, payments, payment requests, accounts.",
+  "version": "0.3.0",
+  "description": "TxGold Business API client for Node.js: signed requests, payments, payment requests, holds, accounts.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/cjs/index.js",

@@ -13,10 +13,10 @@ import httpx
 
 from .errors import TxGoldApiError
 from .keys import SigningKey, load_key_file
-from .models import Account, AccountLookup, AccountTransaction, Page, Payment, PaymentRequest, Rate
+from .models import Account, AccountLookup, AccountTransaction, Hold, HoldCaptureResult, Page, Payment, PaymentRequest, Rate
 from .signing import TimestampClock, canonical_string, sign_canonical
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 #: The API's base URL per environment.
 BASE_URLS: Dict[str, str] = {
@@ -82,6 +82,7 @@ class TxGoldClient:
 
         self.payments = Payments(self)
         self.payment_requests = PaymentRequests(self)
+        self.holds = Holds(self)
         self.accounts = Accounts(self)
         self.rates = Rates(self)
         self.sandbox = Sandbox(self)
@@ -250,6 +251,72 @@ class PaymentRequests:
         return cast(PaymentRequest, self._client.request("POST", f"/v1/payment-requests/{_segment(request_id)}/cancel"))
 
 
+class Holds:
+    """Hold an amount on a customer's balance, then charge what was used (pay at the pump).
+
+    The customer approves on their phone, so wait for ``held`` (poll :meth:`get`) before starting the
+    service.
+    """
+
+    def __init__(self, client: TxGoldClient) -> None:
+        self._client = client
+
+    def create(
+        self,
+        account_id: str,
+        amount: Amount,
+        *,
+        payer_account_id: Optional[str] = None,
+        payer_handle: Optional[str] = None,
+        memo: Optional[str] = None,
+        memo_internal: Optional[str] = None,
+        tag: Optional[str] = None,
+        approve_by: Optional[str] = None,
+        hold_minutes: Optional[int] = None,
+        timestamp: Optional[str] = None,
+    ) -> Hold:
+        """Asks a customer to approve a hold of up to ``amount`` for ``account_id`` (yours).
+
+        Name the customer by ``payer_account_id`` or ``payer_handle``, or by neither for an open hold:
+        anyone with its ``holdUrl`` can approve it once. Nothing is reserved until they approve.
+        ``approve_by``: default 10 minutes ahead, at most 24 hours. ``hold_minutes``: how long the hold
+        lasts once approved, 1 to 4320, default 60. ``tag`` is your own label, never shown.
+        """
+        body = _body(accountId=account_id, payerAccountId=payer_account_id, payerHandle=payer_handle,
+                     amount=_amount(amount), memo=memo, memoInternal=memo_internal, tag=tag,
+                     approveBy=approve_by, holdMinutes=hold_minutes)
+        return cast(Hold, self._client.request("POST", "/v1/holds", body=body, timestamp=timestamp))
+
+    def get(self, hold_id: str) -> Hold:
+        return cast(Hold, self._client.request("GET", f"/v1/holds/{_segment(hold_id)}"))
+
+    def list(self, account_id: str, *, status: Optional[str] = None, tag: Optional[str] = None,
+             limit: Optional[int] = None, cursor: Optional[str] = None) -> Page[Hold]:
+        """A page of holds, optionally only one ``status`` or ``tag``."""
+        return self._client._page("GET", "/v1/holds", {"accountId": account_id, "status": status, "tag": tag,
+                                                       "limit": limit, "cursor": cursor})
+
+    def list_all(self, account_id: str, *, status: Optional[str] = None, tag: Optional[str] = None,
+                 limit: Optional[int] = None) -> Iterator[Hold]:
+        """Every hold, across pages."""
+        return TxGoldClient.paginate(
+            lambda cursor: self.list(account_id, status=status, tag=tag, limit=limit, cursor=cursor))
+
+    def capture(self, hold_id: str, amount: Amount, *, memo: Optional[str] = None,
+                timestamp: Optional[str] = None) -> HoldCaptureResult:
+        """Charges a held hold, once: from 0.01 up to the amount held. The rest goes back at once.
+
+        Gives the captured ``hold`` and the ``payment`` it made. ``memo`` defaults to the hold's memo.
+        """
+        body = _body(amount=_amount(amount), memo=memo)
+        return cast(HoldCaptureResult, self._client.request("POST", f"/v1/holds/{_segment(hold_id)}/capture",
+                                                            body=body, timestamp=timestamp))
+
+    def release(self, hold_id: str) -> Hold:
+        """Charges nothing: releases a held hold, or cancels a pending request."""
+        return cast(Hold, self._client.request("POST", f"/v1/holds/{_segment(hold_id)}/release"))
+
+
 class Accounts:
     def __init__(self, client: TxGoldClient) -> None:
         self._client = client
@@ -303,3 +370,12 @@ class Sandbox:
         body = None if payer_account_id is None else {"payerAccountId": payer_account_id}
         return cast(Payment, self._client.request("POST", f"/v1/sandbox/payment-requests/{_segment(request_id)}/pay",
                                                   body=body))
+
+    def approve_hold(self, hold_id: str, payer_account_id: Optional[str] = None) -> Hold:
+        """Has a demo customer approve a pending hold, as they would in the app.
+
+        A hold to a named payer is approved by that payer. An open hold is approved by
+        ``payer_account_id`` (one of your demo customers), else by your first demo customer.
+        """
+        body = None if payer_account_id is None else {"payerAccountId": payer_account_id}
+        return cast(Hold, self._client.request("POST", f"/v1/sandbox/holds/{_segment(hold_id)}/approve", body=body))

@@ -255,4 +255,90 @@ public class ClientTests
         using var client = new TxGoldClient(new TxGoldClientOptions { Key = Key, Environment = environment });
         Assert.Equal(("https", host), (client.BaseUrl.Scheme, client.BaseUrl.Host));
     }
+
+    private static object HoldJson(string status = "held", string? amountCaptured = null, string? paymentId = null) => new
+    {
+        id = "9001", status, accountId = "1000002", payerAccountId = "1000004", isOpen = false, amount = "150.00",
+        memo = "Pump 4", memoInternal = (string?)null, tag = "pump-4", holdMinutes = 30, createdAt = "2026-11-22T00:00:00Z",
+        approveBy = "2026-11-22T00:10:00Z", heldAt = "2026-11-22T00:00:20Z", heldUntil = "2026-11-22T00:30:20Z",
+        amountCaptured, amountReleased = (string?)null, paymentId, endedAt = (string?)null, holdUrl = (string?)null,
+    };
+
+    [Fact]
+    public async Task Holds_create_get_list_capture_release_send_what_the_API_expects()
+    {
+        var (client, handler) = Client(0,
+            Ok(HoldJson("pending"), HttpStatusCode.Created),
+            Ok(HoldJson()),
+            Ok(new { data = new[] { HoldJson() }, nextCursor = (string?)null }),
+            Ok(new { hold = HoldJson("captured", "63.17", "88"), payment = PaymentJson }, HttpStatusCode.Created),
+            Ok(HoldJson("released")));
+
+        var created = await client.Holds.CreateAsync(new HoldCreate
+        {
+            AccountId = "1000002", PayerHandle = "Jason-Miles", Amount = 150m, Memo = "Pump 4", Tag = "pump-4", HoldMinutes = 30,
+        });
+        Assert.Equal("pending", created.Status);
+        Assert.Equal(HttpMethod.Post, handler.Sent[0].Method);
+        Assert.Equal("/v1/holds", handler.Sent[0].Uri.AbsolutePath);
+        Assert.Equal("{\"accountId\":\"1000002\",\"payerHandle\":\"Jason-Miles\",\"amount\":\"150.00\",\"memo\":\"Pump 4\",\"holdMinutes\":30,\"tag\":\"pump-4\"}",
+            Encoding.UTF8.GetString(handler.Sent[0].Body));
+
+        var hold = await client.Holds.GetAsync("9001");
+        Assert.Equal(("held", 150m, 30), (hold.Status, hold.Amount, hold.HoldMinutes));
+        Assert.Equal(DateTimeOffset.Parse("2026-11-22T00:30:20Z"), hold.HeldUntil);
+        Assert.Equal("/v1/holds/9001", handler.Sent[1].Uri.AbsolutePath);
+
+        var page = await client.Holds.ListAsync("1000002", status: "held", tag: "pump-4");
+        Assert.Equal("9001", Assert.Single(page.Data).Id);
+        var query = HttpUtility.ParseQueryString(handler.Sent[2].Uri.Query);
+        Assert.Equal(("1000002", "held", "pump-4"), (query["accountId"], query["status"], query["tag"]));
+
+        var result = await client.Holds.CaptureAsync("9001", new HoldCapture { Amount = 63.17m, Memo = "Pump 4: 41.2 L" });
+        Assert.Equal((63.17m, "88"), (result.Hold.AmountCaptured, result.Payment.Id));
+        Assert.Equal("/v1/holds/9001/capture", handler.Sent[3].Uri.AbsolutePath);
+        Assert.Equal("{\"amount\":\"63.17\",\"memo\":\"Pump 4: 41.2 L\"}", Encoding.UTF8.GetString(handler.Sent[3].Body));
+
+        var released = await client.Holds.ReleaseAsync("9001");
+        Assert.Equal("released", released.Status);
+        Assert.Equal("/v1/holds/9001/release", handler.Sent[4].Uri.AbsolutePath);
+        Assert.Empty(handler.Sent[4].Body);
+
+        foreach (var s in handler.Sent)
+            AssertSigned(s);
+    }
+
+    [Fact]
+    public async Task Holds_ListAll_follows_the_cursor()
+    {
+        var (client, handler) = Client(0,
+            Ok(new { data = new[] { HoldJson() }, nextCursor = "next+1" }),
+            Ok(new { data = new[] { HoldJson("released") }, nextCursor = (string?)null }));
+        var statuses = new List<string>();
+        await foreach (var h in client.Holds.ListAllAsync("1000002", tag: "pump-4"))
+            statuses.Add(h.Status);
+        Assert.Equal(new[] { "held", "released" }, statuses);
+        Assert.Equal("next+1", HttpUtility.ParseQueryString(handler.Sent[1].Uri.Query)["cursor"]);
+    }
+
+    [Fact]
+    public async Task Holds_second_capture_surfaces_hold_not_held()
+    {
+        var (client, _) = Client(0, Ok(new { status = 409, code = "hold_not_held", title = "Hold is not held" }, HttpStatusCode.Conflict));
+        var error = await Assert.ThrowsAsync<TxGoldApiException>(() => client.Holds.CaptureAsync("9001", new HoldCapture { Amount = 0.01m }));
+        Assert.Equal("hold_not_held", error.Code);
+    }
+
+    [Fact]
+    public async Task Sandbox_approve_hold_sends_no_body_unless_a_payer_is_named()
+    {
+        var (client, handler) = Client(0, Ok(HoldJson()), Ok(HoldJson()));
+        await client.Sandbox.ApproveHoldAsync("9001");
+        await client.Sandbox.ApproveHoldAsync("9002", "1000005");
+        Assert.Equal("/v1/sandbox/holds/9001/approve", handler.Sent[0].Uri.AbsolutePath);
+        Assert.Empty(handler.Sent[0].Body);
+        Assert.Equal("{\"payerAccountId\":\"1000005\"}", Encoding.UTF8.GetString(handler.Sent[1].Body));
+        AssertSigned(handler.Sent[0]);
+        AssertSigned(handler.Sent[1]);
+    }
 }

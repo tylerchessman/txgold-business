@@ -10,8 +10,8 @@ the real amount later: hold 150.00 before the pump starts, charge 63.17 for the 
 goes straight back. Typical uses: fuel and EV charging, rentals, deposits, tabs.
 
 For the client, signing, errors and the Sandbox, see the `txgold-business-api` skill. The SDKs
-(0.2.x) have no hold methods yet: use the generic signed call, `client.request(...)` (JS, Python)
-or `client.SendAsync<T>(...)` (C#).
+have hold methods from 0.3.0: `client.holds` (JS, Python), `client.Holds` (C#). On 0.2.x, use
+the generic signed call, `client.request(...)` (JS, Python) or `client.SendAsync<T>(...)` (C#).
 
 ## The flow
 
@@ -139,31 +139,34 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function waitForApproval(holdId, approveBy) {
   const deadline = new Date(approveBy).getTime() + 10_000;
   for (;;) {
-    const hold = await client.request('GET', `/v1/holds/${encodeURIComponent(holdId)}`);
+    const hold = await client.holds.get(holdId);
     if (hold.status !== 'pending' || Date.now() > deadline) return hold;
     await sleep(3000);
   }
 }
 
-const hold = await client.request('POST', '/v1/holds', undefined, {
+const hold = await client.holds.create({
   accountId, payerHandle: 'Jason-Miles', amount: '150.00', memo: 'Pump 4', tag: 'pump-4', holdMinutes: 30,
 });
 console.log('Asked for hold', hold.id, '- approve it in the TxGold app before', hold.approveBy);
 
 const decided = await waitForApproval(hold.id, hold.approveBy);
 if (decided.status !== 'held') {
-  if (decided.status === 'pending') await client.request('POST', `/v1/holds/${hold.id}/release`); // give up: cancel it
+  if (decided.status === 'pending') await client.holds.release(hold.id); // give up: cancel it
   throw new Error(`Hold ${hold.id} ended ${decided.status}`);
 }
 
 // … pump fuel …
-const { hold: done, payment } = await client.request('POST', `/v1/holds/${hold.id}/capture`, undefined, { amount: '63.17' });
+const { hold: done, payment } = await client.holds.capture(hold.id, { amount: '63.17' });
 console.log(done.status, 'charged', done.amountCaptured, 'released', done.amountReleased, 'payment', payment.id);
 ```
 
-Python is the same shape: `client.request("POST", "/v1/holds", body={...})`,
-`client.request("GET", f"/v1/holds/{hold_id}")`. C#:
-`await client.SendAsync<JsonElement>(HttpMethod.Post, $"/v1/holds/{id}/capture", body: new { amount = "63.17" })`.
+Python: `client.holds.create(account_id, "150.00", payer_handle="Jason-Miles", memo="Pump 4", tag="pump-4",
+hold_minutes=30)`, `client.holds.get(hold_id)`, `client.holds.capture(hold_id, "63.17")` (amounts as
+`str` or `Decimal`, never `float`), `client.holds.release(hold_id)`. C#:
+`await client.Holds.CreateAsync(new HoldCreate { AccountId = accountId, PayerHandle = "Jason-Miles", Amount = 150m })`,
+`GetAsync(id)`, `CaptureAsync(id, new HoldCapture { Amount = 63.17m })`, `ReleaseAsync(id)`. Sandbox:
+`client.sandbox.approveHold(id)` / `approve_hold(id)` / `Sandbox.ApproveHoldAsync(id)`.
 
 ## Testing against a real phone
 

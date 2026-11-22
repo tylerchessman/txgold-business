@@ -11,6 +11,11 @@ values) can arrive at any time; anything breaking waits for a new major version.
 - The Sandbox moves to `https://api-sandbox.txgold.money`. The old Sandbox address keeps working
   for now, but use the new one.
 - **SDKs 0.2.0** know both URLs and choose one from the key file's `environment`.
+- **Holds** (pay at the pump): `POST /v1/holds` asks a customer to approve a hold on their balance;
+  once it is `held`, charge what was used, once, with `POST /v1/holds/{id}/capture`, or release it.
+  Poll `GET /v1/holds/{id}` for the customer's answer. The Sandbox approves as a demo customer with
+  `POST /v1/sandbox/holds/{id}/approve`.
+- **SDKs 0.3.0** add `holds` (create, get, list, capture, release) and the Sandbox's hold approval.
 - The OpenAPI document lists both servers.
 
 ## 2026-11-11
