@@ -32,7 +32,9 @@ jobs:
       - run: npm run build
 
   python:
-    runs-on: ubuntu-latest
+    # ubuntu-latest moved to 26.04, which has no Python 3.9 build. 3.9 stays in the matrix while
+    # pyproject.toml says requires-python >=3.9; drop both together, then return to ubuntu-latest.
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         python: ['3.9', '3.12', '3.13']
