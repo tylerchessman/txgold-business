@@ -249,5 +249,61 @@
     "title": "Payment request already paid",
     "meaning": "Someone has already paid this open payment request. An open request (one made with no payer) can be paid once, by whoever pays first; a second payment is refused and nothing moves. Through the API a second attempt is normally refused earlier, with `request_not_pending`. This code is what a payment gets when it reaches the ledger anyway: two payers in the same instant, or a payer in the TxGold app.",
     "fix": "Fetch the request: it's `paid`, and `paymentId` is the payment that paid it. If this customer still owes you, create a new request for them."
+  },
+  {
+    "code": "hold_not_held",
+    "status": 409,
+    "title": "Hold is not held",
+    "meaning": "Not documented yet.",
+    "fix": "Not documented yet."
+  },
+  {
+    "code": "hold_expired",
+    "status": 409,
+    "title": "Hold expired",
+    "meaning": "Not documented yet.",
+    "fix": "Not documented yet."
+  },
+  {
+    "code": "hold_not_open",
+    "status": 409,
+    "title": "Hold is not open",
+    "meaning": "Not documented yet.",
+    "fix": "Not documented yet."
+  },
+  {
+    "code": "webhook_endpoint_disabled",
+    "status": 409,
+    "title": "Webhook endpoint disabled",
+    "meaning": "Not documented yet.",
+    "fix": "Not documented yet."
+  },
+  {
+    "code": "capture_exceeds_hold",
+    "status": 422,
+    "title": "Capture exceeds hold",
+    "meaning": "Not documented yet.",
+    "fix": "Not documented yet."
+  },
+  {
+    "code": "webhook_endpoint_limit",
+    "status": 422,
+    "title": "Webhook endpoint limit reached",
+    "meaning": "Not documented yet.",
+    "fix": "Not documented yet."
+  },
+  {
+    "code": "rate_limited",
+    "status": 429,
+    "title": "Too many requests",
+    "meaning": "Not documented yet.",
+    "fix": "Not documented yet."
+  },
+  {
+    "code": "webhooks_unavailable",
+    "status": 503,
+    "title": "Webhooks unavailable",
+    "meaning": "Not documented yet.",
+    "fix": "Not documented yet."
   }
 ]
