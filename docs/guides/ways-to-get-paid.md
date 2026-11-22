@@ -6,8 +6,8 @@ does, what you see, whether the amount can be changed, and which example shows i
 
 | | Way | Code needed | Amount fixed? | Best for |
 |---|---|---|---|---|
-| 1 | [Your code](#_1-your-code) | None | No: the payer chooses | A counter, a tip jar, a donation |
-| 2 | [A code with an amount](#_2-a-code-with-an-amount) | None, or a link you build | No: a suggestion | A price list, a menu |
+| 1 | [Your QR code](#_1-your-qr-code) | None | No: the payer chooses | A counter, a tip jar, a donation |
+| 2 | [A QR code with an amount](#_2-a-qr-code-with-an-amount) | None, or a link you build | No: a suggestion | A price list, a menu |
 | 3 | [A request from the app](#_3-a-request-from-the-app) | None | Yes | Billing someone you know |
 | 4 | [Checkout on your website](#_4-checkout-on-your-website) | API | Yes | Online orders |
 | 5 | [Checkout inside your app](#_5-checkout-inside-your-app) | API | Yes | A mobile or web app |
@@ -23,7 +23,7 @@ on one side, the customer's TxGold app on the other, and each API call between t
 sample code behind it.
 :::
 
-## 1. Your code
+## 1. Your QR code
 
 **For:** anywhere a customer can see your sign: a counter, a stall, a donation box.
 
@@ -35,18 +35,18 @@ payer scans it, types the amount and pays.
 - **What the payer does:** scans, enters an amount, pays.
 - **What you see:** the payment, with the payer's memo.
 - **Amount:** the payer chooses.
-- **It survives a rename.** The code carries your account id as well as your handle. If you change
-  your handle, old codes still pay you, and the app tells the payer the name has changed.
+- **It survives a rename.** The QR code carries your account id as well as your handle. If you change
+  your handle, old QR codes still pay you, and the app tells the payer the name has changed.
 
-The link inside the code is `https://app.txgold.money/RequestPayment?AccountId=<id>&AccountName=<handle>`.
+The link inside the QR code is `https://app.txgold.money/RequestPayment?AccountId=<id>&AccountName=<handle>`.
 
-## 2. A code with an amount
+## 2. A QR code with an amount
 
-**For:** a fixed menu or price list, where a code per item is handy.
+**For:** a fixed menu or price list, where a QR code per item is handy.
 
 **Try it** in the [live demo](https://demo.txgold.money/code-with-amount).
 
-**My code** can add an amount to the code, or you can build the link yourself, with a memo too:
+**My code** can add an amount to the QR code, or you can build the link yourself, with a memo too:
 
 ```
 https://app.txgold.money/RequestPayment?AccountId=1000007&AccountName=PoolMan&Amt=12.50&Memo=Pool%20check

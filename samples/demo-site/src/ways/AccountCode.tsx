@@ -11,7 +11,7 @@ import { useLog } from '@/lib/useDemoRequest';
 import type { StepName, Way } from '@/lib/steps';
 
 /**
- * 1. Your code, and 2. a code with an amount. No API call makes the code: it's a link to the
+ * 1. Your QR code, and 2. a QR code with an amount. No API call makes the code: it's a link to the
  * business's account. The customer then pays the account directly, which the Sandbox has no way
  * to simulate (decision D40), so that payment is shown, not made. Checking what you were paid is
  * a real call.
@@ -72,8 +72,8 @@ export function AccountCode({ way, withAmount }: { way: Way; withAmount: boolean
   let now: ReactNode;
   if (!scanned)
     now = withAmount
-      ? <>The same code as way 1, with a suggested amount and memo in the link. Make one per item on a menu. No API call and no key. <strong>Scan it.</strong></>
-      : <>Your code is a link to your account, drawn as a QR. Print it once; no API call and no key. <strong>Scan it with the phone.</strong></>;
+      ? <>The same QR code as way 1, with a suggested amount and memo in the link. Make one per item on a menu. No API call and no key. <strong>Scan it.</strong></>
+      : <>Your QR code holds a link to your account. Print it once; no API call and no key. <strong>Scan it with the phone.</strong></>;
   else if (!paid) {
     step = 'link.qr';
     now = withAmount
@@ -81,7 +81,7 @@ export function AccountCode({ way, withAmount }: { way: Way; withAmount: boolean
       : <>The TxGold app opens on your account, and the customer types the amount.</>;
   } else {
     step = 'tour.transactions';
-    now = <>The payment goes straight to your account. Your code finds it in your transactions: <code>GET /v1/accounts/{'{id}'}/transactions</code>. <strong>Check them.</strong></>;
+    now = <>The payment goes straight to your account. Your system finds it in your transactions: <code>GET /v1/accounts/{'{id}'}/transactions</code>. <strong>Check them.</strong></>;
   }
 
   const valid = /^\d{1,2}(\.\d{1,2})?$/.test(typed) && Number(typed) > 0;
