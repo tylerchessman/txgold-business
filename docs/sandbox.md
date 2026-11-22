@@ -70,6 +70,22 @@ POST /v1/sandbox/payment-requests/{id}/pay
 An open request's `paymentUrl` opens the real TxGold app, which can't see Sandbox requests. In the
 Sandbox, show the link or QR to check your screens, and pay it with the route above.
 
+## Simulating a customer approving a hold
+
+In production a customer approves a [hold](/guides/holds) in the TxGold app. In the Sandbox, have
+the demo customer approve it:
+
+```http
+POST /v1/sandbox/holds/{id}/approve
+```
+
+The hold must be pending and addressed to one of your demo customers
+([`payer_not_demo_customer`](/errors/payer_not_demo_customer) otherwise). The customer is topped
+up first if they're short, then approves exactly as in the app, so the hold is `held` and you can
+capture or release it. For an open hold, name the demo customer with `{ "payerAccountId": "1000004" }`,
+or leave the body out for your first one. SDKs: `sandbox.approveHold` / `sandbox.approve_hold` /
+`Sandbox.ApproveHoldAsync`.
+
 ## What's the same
 
 Everything else: the routes, signing, roles, limits, errors and fees behave as in Production. The

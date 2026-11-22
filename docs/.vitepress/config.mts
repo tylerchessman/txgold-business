@@ -46,6 +46,7 @@ export default defineConfig({
           { text: 'Ways to get paid', link: '/guides/ways-to-get-paid' },
           { text: 'Payments and refunds', link: '/guides/payments' },
           { text: 'Payment requests', link: '/guides/payment-requests' },
+          { text: 'Holds', link: '/guides/holds' },
           { text: 'Accounts and history', link: '/guides/accounts' },
           { text: 'Rates', link: '/guides/rates' },
           { text: 'Idempotency and retries', link: '/guides/idempotency' },
