@@ -17,6 +17,12 @@ Every payment lands in your account the same way: in your
 [transactions](/guides/accounts), and as a "payment received" notification on your phone. Webhooks
 are coming; until then, your code polls (each example shows how).
 
+::: tip A website but no developer?
+The [pay widget](/guides/pay-widget) puts a TxGold checkout on any website with no code: set it
+up in the business portal and paste a link or an `<iframe>`. Visitors choose an amount, fill in the
+details you ask for, and pay in the TxGold app.
+:::
+
 ::: tip See them all working
 [demo.txgold.money](https://demo.txgold.money) runs each way against the Sandbox: the business
 on one side, the customer's TxGold app on the other, and each API call between them, with the

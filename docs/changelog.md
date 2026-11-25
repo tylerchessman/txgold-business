@@ -6,6 +6,20 @@ values) can arrive at any time; anything breaking waits for a new major version.
 The SDKs are at 0.x. Until 1.0, a minor version (0.3 to 0.4) may change their interface; the entry
 for that version says what changed and how to update. Patch versions never do.
 
+## 2026-11-25
+
+In the Sandbox now; in Production when pay.txgold.money opens.
+
+- **[Pay widget](/guides/pay-widget):** a TxGold checkout for any website, with no code and no
+  keys. An Admin sets it up on the business portal's new **Widgets** page and pastes a link or an
+  `<iframe>`. The portal's new **Transactions** page shows each widget payment with the visitor's
+  details, downloads a CSV, and erases details on request.
+- On a credit that paid one of your payment requests, `memoInternal` is now that request's
+  `memoInternal` (Integration role only), and the new `paymentRequestTag` is its `tag`, in
+  transaction history and on payments.
+- A payment request's `memoInternal` may be up to 255 characters (was 150).
+- New portal error [`widget_limit`](/errors/widget_limit) (422).
+
 ## Production opens
 
 - **Production** at `https://api.txgold.money`, with real TxGold and real customers. Sign in to

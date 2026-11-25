@@ -32,7 +32,7 @@ POST /v1/payment-requests
 | `payerHandle` | The payer by TxGold handle, instead of `payerAccountId`. Optional. |
 | `amount` | A decimal string, at most 2 places. A business or charity must ask for more than 0.02. |
 | `memo` | Shown to the payer, and becomes the payment's memo. Up to 150 characters. |
-| `memoInternal` | Your own reference, never shown to the payer. Up to 150 characters. |
+| `memoInternal` | Your own reference, never shown to the payer. Up to 255 characters. You see it again on the payment that pays the request. |
 | `expiresAt` | Optional. At least 1 minute ahead. To a payer: at most 7 days, and 7 days if left out. Open: at most 90 days, and 30 if left out. |
 | `tag` | Optional. Your own label: a till, a device, a campaign. Never shown to the payer. Up to 50 characters. |
 
