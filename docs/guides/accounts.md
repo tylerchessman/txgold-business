@@ -48,6 +48,7 @@ Newest first, paged with `cursor`. `from` is inclusive and `to` exclusive; each 
       "memoInternal": null,
       "createdAt": "2026-11-06T17:31:34.562Z",
       "paymentRequestId": "4",
+      "paymentRequestTag": "spring-campaign",
       "refundOf": null,
       "refundId": "17",
       "balanceAfter": "59.69",
@@ -63,6 +64,11 @@ Newest first, paged with `cursor`. `from` is inclusive and `to` exclusive; each 
 - `fee` is on credits only: TxGold's fee, which you paid as the recipient. `balanceAfter` is after
   it.
 - `paymentRequestId`, `refundOf` and `refundId` link the row to its request and refunds.
+- `memo` is the payer's memo. `memoInternal` is your own reference: on a debit, the one you gave
+  the payment; on a credit that paid one of your payment requests, that request's `memoInternal`.
+  For a [pay widget](/guides/pay-widget), that's the details the visitor typed. The device roles
+  get `null` for it on credits.
+- `paymentRequestTag` is the paid request's `tag`: for a pay widget, the widget's id.
 - `estimatedUsdValue` is what the TxGold was worth in dollars at the time. `actualUsdValue` is set
   only where dollars really changed hands.
 - `balanceAfter` is filled for the Integration role only.
