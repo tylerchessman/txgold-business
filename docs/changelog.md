@@ -8,8 +8,6 @@ for that version says what changed and how to update. Patch versions never do.
 
 ## 2026-11-25
 
-In the Sandbox now; in Production when pay.txgold.money opens.
-
 - **[Pay widget](/guides/pay-widget):** a TxGold checkout for any website, with no code and no
   keys. An Admin sets it up on the business portal's new **Widgets** page and pastes a link or an
   `<iframe>`. The portal's new **Transactions** page shows each widget payment with the visitor's
