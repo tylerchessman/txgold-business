@@ -268,7 +268,7 @@
           "Holds"
         ],
         "summary": "Ask to hold an amount",
-        "description": "Asks a customer, named by payerAccountId or payerHandle, to approve a hold: once approved, you may charge them up to amount, once, before the hold ends (holdMinutes). With neither, makes an open hold request: nobody is notified, and whoever opens its holdUrl first can approve it. Nothing is reserved until the customer approves; poll GET /v1/holds/{id}, or take the hold.held webhook. Resending the identical signed request (same TxG-Timestamp) returns the existing hold with 200.",
+        "description": "Asks a customer, named by payerAccountId or payerHandle, to approve a hold: once approved, you may charge them up to amount, once, before the hold ends (holdMinutes). With neither, makes an open hold request: nobody is notified, and whoever opens its holdUrl first can approve it. Nothing is reserved until the customer approves; poll GET /v1/holds/{id} until it is held, declined or expired. Resending the identical signed request (same TxG-Timestamp) returns the existing hold with 200.",
         "operationId": "createHold",
         "requestBody": {
           "content": {
@@ -1466,7 +1466,7 @@
           },
           "memoInternal": {
             "type": "string",
-            "description": "The payer's own reference. On debits only."
+            "description": "Your own reference. On a debit, the one you gave the payment. On a credit that paid one of your payment requests, the request's memoInternal: for a pay widget, what the visitor typed, \" | \" between the fields. Null on credits for the device roles."
           },
           "createdAt": {
             "type": "string",
@@ -1475,6 +1475,10 @@
           "paymentRequestId": {
             "type": "string",
             "description": "The payment request this payment paid, if any."
+          },
+          "paymentRequestTag": {
+            "type": "string",
+            "description": "On a credit that paid one of your payment requests: that request's tag. For a pay widget, the widget's id."
           },
           "refundOf": {
             "type": "string",
@@ -1718,7 +1722,7 @@
           },
           "memoInternal": {
             "type": "string",
-            "description": "Your own reference, never shown to the customer. At most 150 characters."
+            "description": "Your own reference, never shown to the customer. At most 255 characters."
           },
           "approveBy": {
             "type": "string",
@@ -1819,7 +1823,7 @@
           },
           "memoInternal": {
             "type": "string",
-            "description": "The payer's own reference. Shown to the payer only."
+            "description": "Your own reference. To the payer, the one they gave the payment. To the recipient, when it paid one of their payment requests, the request's memoInternal: for a pay widget, what the visitor typed. Null for the device roles' view of a credit."
           },
           "createdAt": {
             "type": "string",
@@ -1828,6 +1832,10 @@
           "paymentRequestId": {
             "type": "string",
             "description": "The payment request this payment paid, if any."
+          },
+          "paymentRequestTag": {
+            "type": "string",
+            "description": "To the recipient, when it paid one of their payment requests: that request's tag. For a pay widget, the widget's id."
           },
           "holdId": {
             "type": "string",
@@ -1979,7 +1987,7 @@
           },
           "memoInternal": {
             "type": "string",
-            "description": "Your own reference, never shown to the payer. At most 150 characters."
+            "description": "Your own reference, never shown to the payer. At most 255 characters. It is also the memoInternal of the payment that pays the request, as you see it."
           },
           "expiresAt": {
             "type": "string",
@@ -1988,6 +1996,124 @@
           "tag": {
             "type": "string",
             "description": "Your own label for the request (a till, a device, a campaign), never shown to the payer. At most 50 characters."
+          }
+        }
+      },
+      "payWidgetConfig": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "integer",
+            "description": "Always 1.",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "Your own name for the widget, such as \"Gala tickets\". Never shown to visitors. 1-100 characters."
+          },
+          "mode": {
+            "type": "string",
+            "description": "choose: preset amounts, and optionally any amount from min to max. fixed: one price times a quantity. free: any amount from min to max."
+          },
+          "currency": {
+            "type": "string",
+            "description": "TXG or USD: what the amounts here are in. USD is converted to TxGold at the current gold price when a visitor asks to pay."
+          },
+          "presets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "choose: 1 to 6 amounts."
+          },
+          "allowOther": {
+            "type": "boolean",
+            "description": "choose: also offer \"Other\", any amount from min to max."
+          },
+          "min": {
+            "type": "string",
+            "description": "free, and choose with allowOther: the smallest amount."
+          },
+          "max": {
+            "type": "string",
+            "description": "free, and choose with allowOther: the largest amount."
+          },
+          "price": {
+            "type": "string",
+            "description": "fixed: the price of one item."
+          },
+          "item": {
+            "type": "string",
+            "description": "fixed: what is being bought, such as \"Gala ticket\". 1-60 characters."
+          },
+          "maxQuantity": {
+            "type": "integer",
+            "description": "fixed: how many a visitor may buy at once, 1-10. Default 1.",
+            "format": "int32"
+          },
+          "cap": {
+            "type": "string",
+            "description": "In TxGold: no request may be for more. More than 0.02, at most 10000."
+          },
+          "memo": {
+            "type": "string",
+            "description": "The memo the payer sees in the TxGold app, which becomes the payment's memo. 1-100 characters."
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/payWidgetField"
+            },
+            "description": "What to ask the visitor, in this order: up to 4. Their answers reach you as the payment's memoInternal, \" | \" between them, within 255 characters in all."
+          },
+          "buttonText": {
+            "type": "string",
+            "description": "Give, Pay or Buy. Default Pay."
+          },
+          "thankYou": {
+            "type": "string",
+            "description": "Shown when the payment arrives. At most 200 characters."
+          },
+          "accent": {
+            "type": "string",
+            "description": "The button colour, #RRGGBB, dark enough for white text (contrast at least 4.5:1)."
+          },
+          "theme": {
+            "type": "string",
+            "description": "light, dark or auto (follows the visitor's setting). Default auto."
+          },
+          "allowedOrigins": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The sites that may show the widget in an iframe, as origins such as \"https://example.org\". Up to 10. Empty: the widget works as a link only."
+          },
+          "returnUrl": {
+            "type": "string",
+            "description": "Where \"Back to the site\" goes after paying: an https:// URL on one of allowedOrigins."
+          }
+        }
+      },
+      "payWidgetField": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "name, email, phone or reference."
+          },
+          "label": {
+            "type": "string",
+            "description": "reference only: what to call it, such as \"In memory of\" or \"Order number\". 1-40 characters."
+          },
+          "required": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "maxLength": {
+            "type": "integer",
+            "description": "The longest answer accepted, 1-255.",
+            "format": "int32"
           }
         }
       },

@@ -305,5 +305,12 @@
     "title": "Webhooks unavailable",
     "meaning": "Not documented yet.",
     "fix": "Not documented yet."
+  },
+  {
+    "code": "widget_limit",
+    "status": 422,
+    "title": "Widget limit reached",
+    "meaning": "Not documented yet.",
+    "fix": "Not documented yet."
   }
 ]
