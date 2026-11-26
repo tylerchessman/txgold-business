@@ -57,7 +57,7 @@ Or start from a blank widget and set **One-time or recurring**:
 | **Ends** | When cancelled, or after a number of payments (2 to 120, the first included) |
 
 Everything else works as for any widget: the amount (Choose, Fixed or Free), the fields you ask
-for, your memo, colours, and the sites it may appear on. **The amount picked at sign-up is the
+for, your memo, colors, and the sites it may appear on. **The amount picked at sign-up is the
 amount every period.** The preview beside the form shows the plan line and what the member will
 see in the app.
 

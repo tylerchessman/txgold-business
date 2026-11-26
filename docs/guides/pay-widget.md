@@ -75,7 +75,7 @@ number is digits, but doesn't verify either.
 - **Memo:** what the payer's app shows, and the memo on the payment, such as "Donation to Friends
   of the Park". Up to 100 characters. Visitors can't change it.
 - **Button:** Give, Pay, Buy or Join.
-- **Colour:** the button colour. It must be dark enough for white text to be read on it; the form
+- **Color:** the button color. It must be dark enough for white text to be read on it; the form
   tells you if it isn't.
 - **Light or dark:** or follow the visitor's own setting.
 - **Thank-you text:** shown once the payment is made.
