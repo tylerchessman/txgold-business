@@ -20,7 +20,8 @@ are coming; until then, your code polls (each example shows how).
 ::: tip A website but no developer?
 The [pay widget](/guides/pay-widget) puts a TxGold checkout on any website with no code: set it
 up in the business portal and paste a link or an `<iframe>`. Visitors choose an amount, fill in the
-details you ask for, and pay in the TxGold app.
+details you ask for, and pay in the TxGold app. It also takes
+[memberships and monthly giving](/guides/recurring-payments).
 :::
 
 ::: tip See them all working

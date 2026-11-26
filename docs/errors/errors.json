@@ -279,6 +279,14 @@
     "fix": "Not documented yet."
   },
   {
+    "code": "mandate_ended",
+    "status": 409,
+    "title": "Recurring payment has ended",
+    "portal": true,
+    "meaning": "Returned to the business portal when you end, or charge in the Sandbox, a recurring payment that has already ended: the member cancelled it, it made all its payments, it lapsed, or an Admin ended it.",
+    "fix": "Nothing to do: no further payments will be taken. Reload the Members page to see its status. See [Memberships and monthly giving](/guides/recurring-payments)."
+  },
+  {
     "code": "capture_exceeds_hold",
     "status": 422,
     "title": "Capture exceeds hold",
