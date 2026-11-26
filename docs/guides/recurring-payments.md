@@ -11,6 +11,7 @@ It needs no code. You set it up on a [pay widget](/guides/pay-widget) and see yo
 ::: tip Who can set one up
 An **Admin** of a business or charity account, signed in to the business portal. Recurring
 payments through the API, with webhooks, are planned; for now they are set up on a widget.
+Offering them means agreeing to the [Organization Terms](https://txgold.money/organization-terms).
 :::
 
 ## What a member sees
@@ -140,7 +141,7 @@ laws, such as California's. They generally ask the seller to:
 - **state the terms clearly before sign-up:** what is charged, how often, until when, and how to
   cancel. Put them on your page next to the widget, not only in the app;
 - **get the member's consent** to those terms (the app's approval records it);
-- **make cancelling easy:** tell members they can cancel in the TxGold app, and honour a request
+- **make cancelling easy:** tell members they can cancel in the TxGold app, and honor a request
   that reaches you another way by ending the plan on the Members page;
 - **give notice** before a free or discounted period becomes paid, or before a price change, where
   the law asks for it.
@@ -148,6 +149,9 @@ laws, such as California's. They generally ask the seller to:
 Rules differ by state and by country, and for charities and donations. This is not legal advice:
 check what applies to you. Payments to you are final, with no chargebacks, so be ready to refund
 a member who was charged in error or who cancelled and asks for one.
+
+The [Organization Terms](https://txgold.money/organization-terms) set these duties out as part of your agreement with TxGold, including ending a
+member's plan promptly when they ask you, rather than TxGold, to cancel.
 
 ## Limits
 
