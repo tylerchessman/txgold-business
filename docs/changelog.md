@@ -6,6 +6,18 @@ values) can arrive at any time; anything breaking waits for a new major version.
 The SDKs are at 0.x. Until 1.0, a minor version (0.3 to 0.4) may change their interface; the entry
 for that version says what changed and how to update. Patch versions never do.
 
+## 2026-11-27
+
+- **[Memberships and monthly giving](/guides/recurring-payments):** a pay widget can now sign
+  members up to pay every month, quarter or year (Recurring), or let visitors choose (Both). The
+  member approves the plan once in the TxGold app; TxGold takes each payment on its due date. The
+  business portal's new **Members** page lists them, ends one with a message to the member, and
+  downloads a CSV; a daily email tells your Admins what needs attention. In the Sandbox,
+  **Charge now** takes the next payment at once.
+- Transaction history has `mandateId` and `mandatePeriod` on each payment of a recurring payment.
+- `txgold:paid` from the pay widget carries `mandateId` after a sign-up.
+- New portal error [`mandate_ended`](/errors/mandate_ended) (409).
+
 ## 2026-11-25
 
 - **[Pay widget](/guides/pay-widget):** a TxGold checkout for any website, with no code and no

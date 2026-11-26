@@ -5,8 +5,10 @@ Take TxGold on your own website with no code and no keys. Set up a **pay widget*
 your site, the way you'd add a video. A visitor chooses an amount, fills in the details you ask
 for, and pays in the TxGold app. You see each payment, with those details, in your transactions.
 
-It suits donations, tickets, dues, deposits, invoices and single items. A shopping cart is a job
-for the API: see [Ways to get paid](/guides/ways-to-get-paid).
+It suits donations, tickets, dues, deposits, invoices and single items. A widget can also sign
+members up to pay **every month, quarter or year**: see
+[Memberships and monthly giving](/guides/recurring-payments). A shopping cart is a job for the
+API: see [Ways to get paid](/guides/ways-to-get-paid).
 
 ::: tip Who can set one up
 An **Admin** of a business or charity account, signed in to the business portal. A business can
@@ -20,7 +22,7 @@ have up to 50 widgets.
    beside them.
 2. **The details** you ask for: name, email, phone and one field of your own ("In memory of",
    "Order number"). A line tells them their details go to you with the payment.
-3. **Give**, **Pay** or **Buy.** On a computer the widget shows a QR code to scan with the TxGold
+3. **Give**, **Pay**, **Buy** or **Join.** On a computer the widget shows a QR code to scan with the TxGold
    app. On a phone it shows an **Open TxGold** button, with the QR code below for paying from a
    second phone.
 4. **The payment, in the TxGold app.** The app shows your name, the amount and your memo. The
@@ -72,11 +74,17 @@ number is digits, but doesn't verify either.
 
 - **Memo:** what the payer's app shows, and the memo on the payment, such as "Donation to Friends
   of the Park". Up to 100 characters. Visitors can't change it.
-- **Button:** Give, Pay or Buy.
+- **Button:** Give, Pay, Buy or Join.
 - **Colour:** the button colour. It must be dark enough for white text to be read on it; the form
   tells you if it isn't.
 - **Light or dark:** or follow the visitor's own setting.
 - **Thank-you text:** shown once the payment is made.
+
+### One-time or recurring
+
+**One-time** unless you choose **Recurring** (every visitor signs up to pay each month, quarter or
+year) or **Both** (the visitor picks "Once" or the period). See
+[Memberships and monthly giving](/guides/recurring-payments).
 
 ### Where it may appear
 
@@ -192,7 +200,7 @@ only to a site on its list, and each message is an object with a `type`:
 |---|---|---|
 | `txgold:ready` | `widgetId` | The widget has loaded. |
 | `txgold:resize` | `height` (pixels) | The widget's height changed. Set the `<iframe>`'s height to it if you like. |
-| `txgold:paid` | `requestId`, `amount` (TxGold, a decimal string) | The visitor's payment went through. |
+| `txgold:paid` | `requestId`, `amount` (TxGold, a decimal string), and for a sign-up to a [recurring payment](/guides/recurring-payments) `mandateId` | The visitor's payment went through. |
 | `txgold:expired` | `requestId` | The visitor's 15 minutes ran out. |
 
 Your page can send `txgold:prefill` with a `fields` object to fill in the form, from a site on the

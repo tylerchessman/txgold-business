@@ -46,6 +46,7 @@ export default defineConfig({
         items: [
           { text: 'Ways to get paid', link: '/guides/ways-to-get-paid' },
           { text: 'Pay widget (no code)', link: '/guides/pay-widget' },
+          { text: 'Memberships and monthly giving', link: '/guides/recurring-payments' },
           { text: 'Payments and refunds', link: '/guides/payments' },
           { text: 'Payment requests', link: '/guides/payment-requests' },
           { text: 'Holds', link: '/guides/holds' },

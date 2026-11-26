@@ -86,6 +86,14 @@ capture or release it. For an open hold, name the demo customer with `{ "payerAc
 or leave the body out for your first one. SDKs: `sandbox.approveHold` / `sandbox.approve_hold` /
 `Sandbox.ApproveHoldAsync`.
 
+## Simulating recurring payments
+
+A [recurring widget](/guides/recurring-payments)'s **Simulate payment** signs a demo customer up
+and pays the first period. On the business portal's **Members** page, **Charge now** takes the
+next period's payment at once instead of on its due date; tick **Empty the demo customer first**
+to see it fail and the plan go past due. The plan's due dates don't move. The Sandbox also takes
+due payments on schedule, as Production does.
+
 ## What's the same
 
 Everything else: the routes, signing, roles, limits, errors and fees behave as in Production. The
