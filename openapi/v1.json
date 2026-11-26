@@ -1310,6 +1310,77 @@
         }
       }
     },
+    "/v1/sandbox/mandates/{id}/charge-now": {
+      "post": {
+        "tags": [
+          "Sandbox"
+        ],
+        "summary": "Charge a recurring payment's next period now (Sandbox only)",
+        "description": "Runs one of your recurring payments' next charge at once, as TxGold would on its due date, so you can see a renewal, its receipt and its webhooks without waiting a month. With emptyCustomerFirst, the demo customer first pays its balance back, so you see a failed charge and the past_due status. The plan's real due dates don't move. Signed by your business portal session (the Members page's Charge now). Not available in production.",
+        "operationId": "sandboxChargeMandateNow",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/sandboxChargeNow"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "What the charge did.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sandboxChargeNowResult"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "mandate_ended",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "payer_not_demo_customer: emptyCustomerFirst for a member who isn't one of your demo customers.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid_signature, timestamp_out_of_range, key_not_found or key_expired.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/sandbox/customers": {
       "get": {
         "tags": [
@@ -1787,6 +1858,20 @@
           }
         }
       },
+      "page_portalMandate": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/portalMandate"
+            }
+          },
+          "nextCursor": {
+            "type": "string"
+          }
+        }
+      },
       "payment": {
         "type": "object",
         "properties": {
@@ -2068,7 +2153,7 @@
           },
           "buttonText": {
             "type": "string",
-            "description": "Give, Pay or Buy. Default Pay."
+            "description": "Give, Pay, Buy or Join. Default Pay."
           },
           "thankYou": {
             "type": "string",
@@ -2092,6 +2177,9 @@
           "returnUrl": {
             "type": "string",
             "description": "Where \"Back to the site\" goes after paying: an https:// URL on one of allowedOrigins."
+          },
+          "recurring": {
+            "$ref": "#/components/schemas/payWidgetRecurring"
           }
         }
       },
@@ -2116,6 +2204,26 @@
             "format": "int32"
           }
         }
+      },
+      "payWidgetRecurring": {
+        "type": "object",
+        "properties": {
+          "charge": {
+            "type": "string",
+            "description": "once (as without this setting), recurring, or both: the visitor chooses between once and every period."
+          },
+          "periodMonths": {
+            "type": "integer",
+            "description": "recurring and both: 1 (monthly), 3 (quarterly) or 12 (yearly).",
+            "format": "int32"
+          },
+          "maxCharges": {
+            "type": "integer",
+            "description": "recurring and both, optional: end after this many payments, 2-120, the first included. Absent: until cancelled.",
+            "format": "int32"
+          }
+        },
+        "description": "Recurring payments (memberships, dues, monthly giving). Absent: every payment is one-time."
       },
       "rate": {
         "type": "object",
@@ -2152,6 +2260,44 @@
           "memoInternal": {
             "type": "string",
             "description": "Your own reference. At most 150 characters."
+          }
+        }
+      },
+      "sandboxChargeNow": {
+        "type": "object",
+        "properties": {
+          "emptyCustomerFirst": {
+            "type": "boolean",
+            "description": "true: the demo customer first pays its whole balance back, so the charge fails for want of TxGold (or, after a large return, on its daily limit). Only for a demo customer of yours."
+          }
+        }
+      },
+      "sandboxChargeNowResult": {
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "description": "paid, failed (see failureReason; it is now past_due and retried as any failed charge), ended (your account can't take payments), no_rate (a USD plan with no current gold price: try again later) or skipped (nothing was due: it had ended meanwhile)."
+          },
+          "periodNumber": {
+            "type": "integer",
+            "description": "Which payment of the plan was charged.",
+            "format": "int32"
+          },
+          "paymentId": {
+            "type": "string",
+            "description": "paid: the payment."
+          },
+          "failureReason": {
+            "type": "string",
+            "description": "failed: insufficient_balance, daily_send_limit_exceeded, member_account_inactive, above_max_txg or other."
+          },
+          "failureMessage": {
+            "type": "string",
+            "description": "failed: what the payment was refused with."
+          },
+          "mandate": {
+            "$ref": "#/components/schemas/portalMandate"
           }
         }
       },
