@@ -12,7 +12,7 @@ API: see [Ways to get paid](/guides/ways-to-get-paid).
 
 ::: tip Who can set one up
 An **Admin** of a business or charity account, signed in to the business portal. A business can
-have up to 50 widgets.
+have up to 50 widgets. Using one means agreeing to the [Organization Terms](https://txgold.money/organization-terms).
 :::
 
 ## What a visitor sees
@@ -252,7 +252,8 @@ says `paid` only when it has been paid, and its `paymentId` is the payment.
 - **Rate limits:** a widget accepts up to 60 new payments a minute, and 10 an hour from one
   visitor's address.
 - **Your visitors' details:** TxGold keeps them with the payment, for you. See the
-  [privacy policy](https://txgold.money/privacy).
+  [privacy policy](https://txgold.money/privacy), and the [Organization Terms](https://txgold.money/organization-terms) for what you may ask for
+  and how you may use it.
 
 ## Errors in the portal
 
