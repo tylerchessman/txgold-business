@@ -313,5 +313,12 @@
     "portal": true,
     "meaning": "Returned to the business portal when a business that already has 50 pay widgets creates another. Deleted widgets don't count.",
     "fix": "Delete a widget you no longer use, then create the new one. See [Pay widget](/guides/pay-widget)."
+  },
+  {
+    "code": "mandate_ended",
+    "status": 409,
+    "title": "Recurring payment has ended",
+    "meaning": "Not documented yet.",
+    "fix": "Not documented yet."
   }
 ]
